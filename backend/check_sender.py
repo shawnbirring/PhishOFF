@@ -3,7 +3,9 @@ from email.parser import BytesParser
 from email.headerregistry import Address
 import requests
 import re
+import os
 
+ABUSEIPDB_API_KEY = os.getenv("AbuseIPDB-API-key")
 
 def parse_sender_ip(eml_file_path):
     """
@@ -78,10 +80,27 @@ def check_spamhaus(sender):
     return suspicious
 
 
+# needs API key. 1000 checks per account in free plan
+def check_abuseipdb(sender_ip):
+    API_KEY = ABUSEIPDB_API_KEY
+    DAYS = 90
+    
+    url = f"https://www.abuseipdb.com/check/{sender_ip}/json?key={API_KEY}&days={DAYS}"
+    headers = {"Accept": "application/json"}
+
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        data = response.json()
+        return f"Confidence Score: {data.get('abuseConfidenceScore', 'N/A')}%"
+    
+    return f"Error checking AbuseIPDB: {response.status_code}"
+
+
 def analyze_sender(sender_address, sender_ip):
     """
     Analyze sender to see if it listed as suspicious with online spam databases.
-    TODO: implement more free databases
+    TODO implement more free databases
 
     :param sender_address: String of email address
     :param sender_ip: String of email IP
@@ -94,3 +113,10 @@ def analyze_sender(sender_address, sender_ip):
     # checks if all bools in list are true
     return all(suspicion_list)
 
+
+eml_path = "/Users/alexandrawong/Documents/University/BCIT/Bachelor of Science Applied Computer Science 2025/Term 5 (2025 Winter)/COMP 7082 Software Engineering/Sample EML/Submission receipt.eml"
+sender = parse_sender(eml_path)
+ip = parse_sender_ip(eml_path)
+print("suspicious?", analyze_sender(sender, ip))
+print(check_abuseipdb(ip))
+print("sender address:", sender, "\nip address:",ip)
