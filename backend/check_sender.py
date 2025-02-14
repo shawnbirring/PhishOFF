@@ -4,8 +4,12 @@ from email.headerregistry import Address
 import requests
 import re
 import os
+import ipaddress
+from dotenv import load_dotenv
 
+load_dotenv()
 ABUSEIPDB_API_KEY = os.getenv("AbuseIPDB-API-key")
+
 
 def parse_sender_ip(eml_file_path):
     """
@@ -26,14 +30,28 @@ def parse_sender_ip(eml_file_path):
     # \d(1, 3): matches 1 to 3 digits (the octets of IPv4)
     # \.: matches "."
     # {3}: repeats previous pattern 3 times
-    ip_pattern = re.compile(r'\b(?:\d{1,3}\.){3}\d{1,3}\b')
+    ip_pattern = re.compile(
+        # IPv4
+        r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
+
+        # IPv6
+        r'|(?:[A-Fa-f0-9:]+:+)+[A-Fa-f0-9]+'
+    )
+    # print(ip_pattern)
 
     for header in received_headers:
         ip_match = ip_pattern.findall(header)
         if ip_match:
-            # if there were a list of IPs, the last matched IP is most likely to be the sender IP
-            return ip_match[-1]
-
+            for ip in ip_match:
+                try:
+                    ip_obj = ipaddress.ip_address(ip)
+                    if isinstance(ip_obj, ipaddress.IPv4Address):
+                        return str(ip_obj)
+                    elif isinstance(ip_obj, ipaddress.IPv6Address):
+                        return str(ip_obj)
+                except ValueError:
+                    continue
+    
     return None
 
 
@@ -80,19 +98,38 @@ def check_spamhaus(sender):
     return suspicious
 
 
-# needs API key. 1000 checks per account in free plan
-def check_abuseipdb(sender_ip):
-    API_KEY = ABUSEIPDB_API_KEY
-    DAYS = 90
-    
-    url = f"https://www.abuseipdb.com/check/{sender_ip}/json?key={API_KEY}&days={DAYS}"
-    headers = {"Accept": "application/json"}
+# needs API key. 1000 checks per day in free plan
+def check_abuseipdb(sender):
+    """
+    Check ip with abuseipdb.com to see if sender is listed as suspicious
 
-    response = requests.get(url, headers=headers)
-    
+    :param sender: String of IP
+    :return: String of confidence score that it is suspicious
+    :return: String that there are no abuse reports
+    """
+    url = 'https://api.abuseipdb.com/api/v2/check'
+
+    querystring = {
+        'ipAddress': sender,
+        'maxAgeInDays': '90'
+    }
+
+    headers = {
+        'Accept': 'application/json',
+        'Key': ABUSEIPDB_API_KEY
+    }
+
+    response = requests.request(method='GET', url=url, headers=headers, params=querystring)
+
     if response.status_code == 200:
         data = response.json()
-        return f"Confidence Score: {data.get('abuseConfidenceScore', 'N/A')}%"
+
+        abuse_score = data.get('data', {}).get('abuseConfidenceScore', 'N/A')
+
+        if abuse_score != 'N/A':
+            return f"Confidence Score: {abuse_score}%"
+        else:
+            return "No abuse reports found for this IP address."
     
     return f"Error checking AbuseIPDB: {response.status_code}"
 
