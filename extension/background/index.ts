@@ -1,6 +1,12 @@
 import { checkWebsite } from './website_check';
+import { interceptNavigation, startSafetyCheck } from './navigation_interceptor';
 
 console.log('[PhishOFF] Background service worker initialized');
+
+// Set up navigation interception
+chrome.webNavigation.onBeforeNavigate.addListener(details => {
+  interceptNavigation(details);
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "checkWebsite") {
@@ -15,5 +21,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ isSafe: false, message: "Error checking URL" });
             });
         return true;
+    }
+    
+    if (message.action === "proceedToSite") {
+      // Allow user to proceed to site they acknowledge risk
+      if (sender.tab?.id) {
+        chrome.tabs.update(sender.tab.id, { url: message.url });
+      }
+      return false;
     }
 });
