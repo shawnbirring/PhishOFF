@@ -46,6 +46,6 @@ A simple Express API for checking and managing URL safety statuses, built for a 
 
 3. **Run the API**:
    ```bash
-   bun api/server.js
+   bun api/index.js
    ```
    - Server runs at `http://localhost:3000`.
