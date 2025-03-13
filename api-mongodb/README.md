@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PhishOFF URL API
 
-## Getting Started
+A simple Express API for checking and managing URL safety statuses, built for a phishing Chrome extension. Uses Redis for caching and MongoDB for storage.
 
-First, run the development server:
+## Endpoints
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### GET `/api/server/status`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Usage**: Check if the server is running.
+- **Response**: `{"status": "ok"}`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### POST `/api/server/check-url`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Usage**: Check a URL’s safety status.
+- **Request**: `{"url": "https://example.com"}`
+- **Response**: `{"status": "malicious"}` or `{"status": "unknown"}` or `{"status": "safe"}`
 
-## Learn More
+### POST `/api/server/add-url`
 
-To learn more about Next.js, take a look at the following resources:
+- **Usage**: Add or update a URL’s status.
+- **Request**: `{"url": "https://example.com", "status": "malicious"}`
+- **Response**: `{"status": "malicious"}`
+- **Note**: `status` must be `safe`, `malicious`, or `unknown`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### GET `/api/server/urls`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Usage**: List all stored URLs.
+- **Response**: `[{"url": "https://example.com", "status": "malicious", "lastChecked": "..."}]`
 
-## Deploy on Vercel
+## Running Locally
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Install Dependencies**:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```bash
+   bun install
+   ```
+
+2. **Set Up Environment File**:
+   Create a `.env` file:
+
+   ```
+   REDIS_URL=redis://localhost:6379
+   MONGODB_URI=mongodb://localhost:27017/phishing
+   PORT=3000
+   ```
+
+3. **Run the API**:
+   ```bash
+   bun api/server.js
+   ```
+   - Server runs at `http://localhost:3000`.
