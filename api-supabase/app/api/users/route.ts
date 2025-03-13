@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { users, SelectUser } from "@/db/schema";
 
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const usersList: SelectUser[] = await db.select().from(users);
 
