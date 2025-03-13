@@ -11,19 +11,9 @@ redis.on("connect", () => {
   console.log("Connected to Redis");
 });
 
-// Enable trust proxy for rate limiting
-app.set("trust proxy", 1);
-
 // Middleware
 app.use(express.json());
 app.use(compression());
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // 100 requests per window
-    keyGenerator: (req) => req.ip || "default-ip",
-  })
-);
 
 // Connect to MongoDB
 mongoose
@@ -51,7 +41,7 @@ const Url = mongoose.model("Url", urlSchema);
  * // Response
  * { "status": "ok" }
  */
-app.get("/status", (req, res) => res.json({ status: "ok" }));
+app.get("/", (req, res) => res.json({ status: "ok" }));
 
 /**
  * @route POST /check-url
@@ -146,7 +136,7 @@ app.get("/urls", async (req, res) => {
 });
 
 // Start server
-// app.listen(3000, () => console.log(`Server running on port ${3000}`));
+app.listen(3000, () => console.log(`Server running on port ${3000}`));
 
 // Hosting
 module.exports = app;
