@@ -17,13 +17,6 @@ app.set("trust proxy", 1);
 // Middleware
 app.use(express.json());
 app.use(compression());
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // 100 requests per window
-    keyGenerator: (req) => req.ip || "default-ip",
-  })
-);
 
 // Connect to MongoDB
 mongoose
