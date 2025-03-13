@@ -11,9 +11,6 @@ redis.on("connect", () => {
   console.log("Connected to Redis");
 });
 
-// Enable trust proxy for rate limiting
-// app.set("trust proxy", 1);
-
 // Middleware
 app.use(express.json());
 app.use(compression());
@@ -44,7 +41,7 @@ const Url = mongoose.model("Url", urlSchema);
  * // Response
  * { "status": "ok" }
  */
-app.get("/status", (req, res) => res.json({ status: "ok" }));
+app.get("/", (req, res) => res.json({ status: "ok" }));
 
 /**
  * @route POST /check-url
