@@ -8,10 +8,7 @@ export default defineConfig({
   out: './supabase/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.POSTGRES_URL!,
-    ssl: {
-      rejectUnauthorized: false,      // Bypass self-signed cert validation (dev only)
-    },
+    url: process.env.DATABASE_URL!,
   },
   verbose: true,   
   migrations: {
