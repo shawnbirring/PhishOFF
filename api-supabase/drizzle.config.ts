@@ -9,5 +9,13 @@ export default defineConfig({
   dialect: 'postgresql',
   dbCredentials: {
     url: process.env.POSTGRES_URL!,
+    ssl: {
+      rejectUnauthorized: false,      // Bypass self-signed cert validation (dev only)
+    },
+  },
+  verbose: true,   
+  migrations: {
+    table: 'drizzle_migrations',      // Custom migration table name
+    schema: 'public',                 // Explicit schema for migration table
   },
 });

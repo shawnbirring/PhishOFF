@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate": "npx drizzle-kit migrate"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
