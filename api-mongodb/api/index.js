@@ -12,7 +12,7 @@ redis.on("connect", () => {
 });
 
 // Enable trust proxy for rate limiting
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 
 // Middleware
 app.use(express.json());
@@ -139,7 +139,7 @@ app.get("/urls", async (req, res) => {
 });
 
 // Start server
-// app.listen(3000, () => console.log(`Server running on port ${3000}`));
+app.listen(3000, () => console.log(`Server running on port ${3000}`));
 
 // Hosting
 module.exports = app;
