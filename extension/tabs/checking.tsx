@@ -1,39 +1,63 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import type { ScanResult } from "../background/website_check"
+import "../styles/phishoff.css"
 
 const CheckingPage = () => {
   const [url, setUrl] = useState<string>("")
   const [status, setStatus] = useState<"checking" | "safe" | "unsafe">("checking")
   const [result, setResult] = useState<ScanResult | null>(null)
+  const listenerInitialized = useRef(false)
+  const originalUrlRef = useRef<string>("")
   
   useEffect(() => {
-    // Get URL from query parameters
     const urlParams = new URLSearchParams(window.location.search)
     const targetUrl = urlParams.get("url")
     
     if (targetUrl) {
       setUrl(targetUrl)
+      originalUrlRef.current = targetUrl
+      
+      chrome.runtime.sendMessage({
+        action: "checkingPageReady",
+        url: targetUrl,
+        tabId: window.sessionStorage.getItem("tabId") || undefined
+      });
     }
     
-    // Listen for check results from background
-    const messageListener = (message: any) => {
-      if (message.action === "checkResult") {
-        setResult(message.result)
-        setStatus(message.result.isSafe ? "safe" : "unsafe")
+    if (!listenerInitialized.current) {
+      listenerInitialized.current = true;
+      
+      chrome.runtime.onMessage.addListener((message) => {
+        console.log("[PhishOFF] Checking page received message:", message);
         
-        // Auto-redirect if site is safe
-        if (message.result.isSafe) {
-          setTimeout(() => {
-            window.location.href = message.originalUrl
-          }, 1500) // Brief delay so user sees it's safe
+        if (message.action === "checkResult") {
+          setResult(message.result)
+          setStatus(message.result.isSafe ? "safe" : "unsafe")
+          
+          if (message.originalUrl) {
+            originalUrlRef.current = message.originalUrl;
+          }
+          
+          // Auto-redirect if site is safe
+          if (message.result.isSafe) {
+            console.log("[PhishOFF] Site is safe, redirecting in 1.5s to:", message.originalUrl);
+            setTimeout(() => {
+              const redirectUrl = message.originalUrl || originalUrlRef.current;
+              console.log("[PhishOFF] Redirecting now to:", redirectUrl);
+              window.location.href = redirectUrl;
+            }, 1500)
+          }
         }
-      }
+      });
     }
     
-    chrome.runtime.onMessage.addListener(messageListener)
+    chrome.runtime.sendMessage({action: "getTabId"}, (tabId) => {
+      if (tabId) {
+        window.sessionStorage.setItem("tabId", tabId.toString());
+      }
+    });
     
     return () => {
-      chrome.runtime.onMessage.removeListener(messageListener)
     }
   }, [])
   
@@ -41,84 +65,110 @@ const CheckingPage = () => {
   const handleProceedAnyway = () => {
     chrome.runtime.sendMessage({
       action: "proceedToSite",
-      url
+      url: originalUrlRef.current || url
     })
   }
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
-        <div className="flex items-center mb-6">
-          <img src="../assets/icon.png" alt="PhishOFF Logo" className="h-10 w-10 mr-3" />
-          <h1 className="text-2xl font-bold text-blue-600">PhishOFF</h1>
+    <div className="content-centered">
+      <div className="card">
+        <div className="header">
+          <h1 className="title">PhishOFF</h1>
         </div>
         
         {status === "checking" && (
-          <>
-            <div className="flex items-center justify-center mb-6">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+          <div>
+            <div className="status-icon checking">
+              <div className="spinner"></div>
             </div>
-            <h2 className="text-xl font-semibold text-center mb-4">Checking Website Safety...</h2>
-            <p className="text-gray-600 text-center">
-              We're checking if <span className="font-medium text-gray-800">{url}</span> is safe to visit.
-            </p>
-          </>
+            <h2 className="heading">Checking Website Safety...</h2>
+            <div className="url-display">
+              <span>{url}</span>
+            </div>
+          </div>
         )}
         
         {status === "safe" && (
-          <>
-            <div className="flex items-center justify-center mb-6 text-green-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <div>
+            <div className="status-icon safe">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#0d8a45" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-center text-green-600 mb-4">Website Appears Safe</h2>
-            <p className="text-gray-600 text-center mb-4">
-              {result?.message}
+            <h2 className="heading">Website Appears Safe</h2>
+            <div className="url-display mb-4">
+              <span>{originalUrlRef.current || url}</span>
+            </div>
+            <p className="message">
+              {result?.message || "Our scan found no security threats with this website."}
             </p>
-            <p className="text-gray-500 text-center text-sm">
-              Redirecting you to the website...
-            </p>
-          </>
+            <div className="mt-6 animate-pulse">
+              <p className="message">
+                Redirecting you to the website...
+              </p>
+            </div>
+          </div>
         )}
         
         {status === "unsafe" && (
-          <>
-            <div className="flex items-center justify-center mb-6 text-red-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          <div>
+            <div className="status-icon unsafe">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#e54d42" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-center text-red-600 mb-4">Warning: Potentially Unsafe Website</h2>
-            <p className="text-gray-700 text-center mb-6">
-              {result?.message}
+            <h2 className="heading">Warning: Potentially Unsafe Website</h2>
+            <div className="url-display mb-4">
+              <span>{originalUrlRef.current || url}</span>
+            </div>
+            <p className="message">
+              {result?.message || "This website may pose a security risk to your device or personal information."}
             </p>
+            
             {result?.details && (
-              <div className="bg-gray-50 p-3 rounded-lg mb-6 text-sm">
-                <p className="font-medium mb-2">Detection Details:</p>
-                <ul className="space-y-1">
-                  <li className="text-red-600">Malicious: {result.details.malicious}</li>
-                  <li className="text-yellow-600">Suspicious: {result.details.suspicious}</li>
-                  <li className="text-green-600">Harmless: {result.details.harmless}</li>
-                  <li className="text-gray-500">Undetected: {result.details.undetected}</li>
-                </ul>
+              <div className="details">
+                <p className="details-title">Detection Details:</p>
+                <div className="stats-grid">
+                  <div className="stat-item">
+                    <span className="stat-dot dot-red"></span>
+                    <span>Malicious: <strong>{result.details.malicious}</strong></span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-dot dot-yellow"></span>
+                    <span>Suspicious: <strong>{result.details.suspicious}</strong></span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-dot dot-green"></span>
+                    <span>Harmless: <strong>{result.details.harmless}</strong></span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-dot dot-gray"></span>
+                    <span>Undetected: <strong>{result.details.undetected}</strong></span>
+                  </div>
+                </div>
               </div>
             )}
-            <div className="flex flex-col space-y-3">
-              <button 
-                onClick={handleProceedAnyway}
-                className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
-              >
-                Proceed Anyway (Not Recommended)
-              </button>
+            
+            <div className="mt-6">
               <button 
                 onClick={() => window.close()}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+                className="btn btn-primary mb-2"
               >
                 Go Back to Safety
               </button>
+              <div className="mt-2">
+                <button 
+                  onClick={handleProceedAnyway}
+                  className="btn btn-danger"
+                >
+                  Proceed anyway (not recommended)
+                </button>
+              </div>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
