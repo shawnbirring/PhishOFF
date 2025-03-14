@@ -5,7 +5,8 @@
       "permissions": [
         "webNavigation",
         "storage",
-        "tabs"
+        "tabs",
+        "http://localhost:3000/*"
       ],
       "host_permissions": ["<all_urls>"],
       "background": {
