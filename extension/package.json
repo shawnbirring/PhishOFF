@@ -1,7 +1,22 @@
 {
   "name": "phish-off",
+  "plasmo": {
+    "manifest": {
+      "permissions": [
+        "webNavigation",
+        "storage",
+        "tabs",
+        "http://localhost:3000/*"
+      ],
+      "host_permissions": ["<all_urls>"],
+      "background": {
+        "service_worker": "background/index.js",
+        "type": "module"
+      }
+    }
+  },
   "displayName": "Phish off",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Protect against hackers!",
   "author": "Plasmo Corp. <foss@plasmo.com>",
   "scripts": {
@@ -10,6 +25,7 @@
     "package": "plasmo package"
   },
   "dependencies": {
+    "@plasmohq/storage": "^1.13.0",
     "plasmo": "0.89.4",
     "react": "18.2.0",
     "react-dom": "18.2.0"
@@ -24,8 +40,11 @@
     "typescript": "5.3.3"
   },
   "manifest": {
-    "host_permissions": [
-      "https://*/*"
-    ]
-  }
+      "host_permissions": ["<all_urls>"],
+      "permissions": [
+        "webNavigation",
+        "storage",
+        "tabs"
+      ]
+    }
 }
