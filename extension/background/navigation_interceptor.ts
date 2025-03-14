@@ -9,6 +9,7 @@ export interface NavigationRequest {
 export interface CheckingState {
   originalUrl: string;
   timestamp: number;
+  checkResult?: any;
 }
 
 // Store for pending checks to avoid duplicates
@@ -16,7 +17,6 @@ const pendingChecks = new Map<number, CheckingState>();
 
 // Cache of recently verified safe sites with timestamp (hostname -> timestamp)
 const safeSites = new Map<string, number>();
-// How long a site stays in the safe cache (30 minutes)
 const SAFE_SITE_TTL = 30 * 60 * 1000;
 
 /**
@@ -50,7 +50,6 @@ function isSiteInSafeCache(url: string): boolean {
   const isValid = timestamp && (Date.now() - timestamp < SAFE_SITE_TTL);
   
   if (!isValid) {
-    // Clean up expired entries
     safeSites.delete(hostname);
   }
   
@@ -64,27 +63,22 @@ function isSiteInSafeCache(url: string): boolean {
  * @returns Whether to cancel the original navigation
  */
 export function interceptNavigation(details: chrome.webNavigation.WebNavigationParentedCallbackDetails): boolean {
-  // Skip extension pages, chrome:// pages, etc.
   if (!details.url.startsWith('http')) {
     return false;
   }
   
-  // Skip subframes
   if (details.frameId !== 0) {
     return false;
   }
   
   const { tabId, url } = details;
   
-  // Skip if site is in safe cache
   if (isSiteInSafeCache(url)) {
     console.log(`[PhishOFF] Skipping check for known safe site: ${getHostname(url)}`);
     return false;
   }
   
-  // Check if we're already handling this URL in this tab
   if (pendingChecks.has(tabId)) {
-    // Skip if check was initiated in the last 5 seconds (avoid loops)
     const existing = pendingChecks.get(tabId);
     if (existing && Date.now() - existing.timestamp < 5000) {
       return false;
@@ -93,7 +87,6 @@ export function interceptNavigation(details: chrome.webNavigation.WebNavigationP
   
   console.log(`[PhishOFF] Intercepting navigation to: ${url}`);
   
-  // Store the check state
   pendingChecks.set(tabId, {
     originalUrl: url,
     timestamp: Date.now()
@@ -104,7 +97,6 @@ export function interceptNavigation(details: chrome.webNavigation.WebNavigationP
     url: chrome.runtime.getURL(`tabs/checking.html?url=${encodeURIComponent(url)}`)
   });
   
-  // Begin safety check
   startSafetyCheck({ url, tabId, frameId: details.frameId });
   
   return true;
@@ -122,30 +114,70 @@ export async function startSafetyCheck(request: NavigationRequest): Promise<void
     const result = await checkWebsite(request.url);
     console.log(`[PhishOFF] Check result:`, result);
     
-    // Clean up pending check record
-    pendingChecks.delete(request.tabId);
+    const checkState = pendingChecks.get(request.tabId);
+    if (checkState) {
+      checkState.checkResult = result;
+    }
     
-    // If safe, add to safe sites cache
     if (result.isSafe) {
       markSiteAsSafe(request.url);
     }
     
-    // Send result to checking page for handling
-    chrome.tabs.sendMessage(request.tabId, {
-      action: 'checkResult',
-      result,
-      originalUrl: request.url
-    });
+    trySendResultToCheckingPage(request.tabId, result, request.url);
     
   } catch (error) {
     console.error(`[PhishOFF] Safety check failed:`, error);
-    pendingChecks.delete(request.tabId);
     
-    // Send error to checking page
-    chrome.tabs.sendMessage(request.tabId, {
-      action: 'checkResult',
-      result: { isSafe: false, message: "Error checking website safety" },
-      originalUrl: request.url
-    });
+    trySendResultToCheckingPage(request.tabId, { 
+      isSafe: false, 
+      message: "Error checking website safety" 
+    }, request.url);
   }
 }
+
+/**
+ * Try to send the result to the checking page
+ * The result will be stored if the page isn't ready yet
+ */
+function trySendResultToCheckingPage(tabId: number, result: any, originalUrl: string): void {
+  chrome.tabs.sendMessage(tabId, {
+    action: 'checkResult',
+    result,
+    originalUrl
+  }, (response) => {
+    const lastError = chrome.runtime.lastError;
+    if (lastError) {
+      console.log(`[PhishOFF] Couldn't send result yet, will retry when page is ready: ${lastError.message}`);
+      
+    } else {
+      console.log(`[PhishOFF] Result delivered to checking page`);
+      pendingChecks.delete(tabId);
+    }
+  });
+}
+
+// Add a listener for the checking page to request the result when it's ready
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "checkingPageReady") {
+    const tabId = sender.tab?.id || (message.tabId ? parseInt(message.tabId, 10) : null);
+    
+    if (tabId) {
+      console.log(`[PhishOFF] Checking page ready in tab ${tabId}, sending result`);
+      
+      const checkState = pendingChecks.get(tabId);
+      if (checkState && checkState.checkResult) {
+        chrome.tabs.sendMessage(tabId, {
+          action: 'checkResult',
+          result: checkState.checkResult,
+          originalUrl: checkState.originalUrl
+        });
+        
+        pendingChecks.delete(tabId);
+      }
+    }
+  }
+  
+  if (message.action === "getTabId" && sender.tab?.id) {
+    sendResponse(sender.tab.id);
+  }
+});

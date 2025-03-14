@@ -30,4 +30,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       return false;
     }
+    
+    if (message.action === "openUrlsList") {
+      // Open the URLs list page in a new tab
+      chrome.tabs.create({
+        url: chrome.runtime.getURL("tabs/phishoff_urls.html")
+      });
+      return false;
+    }
+    
+    if (message.action === "getTabId" && sender.tab?.id) {
+      sendResponse(sender.tab.id);
+      return true;
+    }
 });

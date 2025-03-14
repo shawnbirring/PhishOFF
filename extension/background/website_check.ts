@@ -11,8 +11,11 @@ export interface ScanResult {
     };
 }
 
+// API endpoint for our MongoDB service
+const API_URL = "http://localhost:3000";
+
 /**
- * Main function to check website security using VirusTotal API
+ * Main function to check website security using database first, then VirusTotal API
  * @param url URL to check
  * @returns Promise resolving to scan results
  */
@@ -33,6 +36,31 @@ export async function checkWebsite(url: string): Promise<ScanResult> {
             return { isSafe: false, message: "Invalid URL format" };
         }
 
+        // First check if URL exists in our database
+        const dbResult = await checkUrlInDatabase(urlToCheck);
+        
+        // If found in database with definitive status, return that result
+        if (dbResult && dbResult.status !== 'unknown') {
+            console.log('[PhishOFF] URL found in database:', dbResult);
+            
+            // Format result to match ScanResult interface
+            return {
+                isSafe: dbResult.status === 'safe',
+                message: dbResult.status === 'safe' ? 
+                    "Website is marked as safe in our database" : 
+                    "Warning: Website is marked as malicious in our database",
+                details: {
+                    harmless: dbResult.status === 'safe' ? 1 : 0,
+                    malicious: dbResult.status === 'malicious' ? 1 : 0,
+                    suspicious: 0,
+                    undetected: 0
+                }
+            };
+        }
+        
+        // If not found or status is unknown, continue with VirusTotal check
+        console.log('[PhishOFF] URL not found in database or status unknown, checking VirusTotal...');
+        
         const apiKey = await getApiKey();
         console.log('[PhishOFF] Got API key, submitting scan...');
 
@@ -44,10 +72,68 @@ export async function checkWebsite(url: string): Promise<ScanResult> {
         }
 
         console.log('[PhishOFF] Got scan ID:', scanId);
-        return await pollResults(scanId, apiKey);
+        const scanResult = await pollResults(scanId, apiKey);
+        
+        // Save result to our database for future reference
+        await saveUrlToDatabase(urlToCheck, scanResult.isSafe ? 'safe' : 'malicious');
+        
+        return scanResult;
     } catch (error) {
         console.error('[PhishOFF] Error in checkWebsite:', error);
         return { isSafe: false, message: "Error checking URL" };
+    }
+}
+
+/**
+ * Checks if URL exists in our database
+ * @param url URL to check
+ * @returns URL status from database or null if not found
+ */
+async function checkUrlInDatabase(url: string): Promise<{ status: string } | null> {
+    try {
+        const response = await fetch(`${API_URL}/check-url`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url })
+        });
+        
+        if (!response.ok) {
+            console.error('[PhishOFF] Database check failed:', response.status);
+            return null;
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('[PhishOFF] Database check error:', error);
+        return null;
+    }
+}
+
+/**
+ * Saves URL and its status to our database
+ * @param url URL to save
+ * @param status Safety status (safe/malicious/unknown)
+ */
+async function saveUrlToDatabase(url: string, status: string): Promise<void> {
+    try {
+        const response = await fetch(`${API_URL}/add-url`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url, status })
+        });
+        
+        if (!response.ok) {
+            console.error('[PhishOFF] Failed to save URL to database:', response.status);
+        } else {
+            console.log('[PhishOFF] URL saved to database:', url, status);
+        }
+    } catch (error) {
+        console.error('[PhishOFF] Database save error:', error);
     }
 }
 
@@ -58,7 +144,6 @@ export async function checkWebsite(url: string): Promise<ScanResult> {
  */
 function sanitizeUrl(url: string): string | null {
     try {
-        
         url = url.trim();
         if (!url.includes('://')) {
             url = 'https://' + url;
