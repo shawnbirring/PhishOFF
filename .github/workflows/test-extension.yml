@@ -27,3 +27,5 @@ jobs:
         run: |
           cd extension
           npm run build
+        env:
+          PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
