@@ -18,12 +18,18 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install Build Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3
+
       - name: Install Dependencies
         run: |
           cd extension
           npm install
+          npm install @parcel/watcher@latest @parcel/watcher-linux-x64 --save-optional
 
-      - name: Run Plasmo Tests
+      - name: Build Extension
         run: |
           cd extension
-          npm run build
+          npm run build  # Adjust this if your build command is different
