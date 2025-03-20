@@ -8,7 +8,9 @@
         "tabs",
         "http://localhost:3000/*"
       ],
-      "host_permissions": ["<all_urls>"],
+      "host_permissions": [
+        "<all_urls>"
+      ],
       "background": {
         "service_worker": "background/index.js",
         "type": "module"
@@ -40,11 +42,19 @@
     "typescript": "5.3.3"
   },
   "manifest": {
-      "host_permissions": ["<all_urls>"],
-      "permissions": [
-        "webNavigation",
-        "storage",
-        "tabs"
-      ]
-    }
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "permissions": [
+      "webNavigation",
+      "storage",
+      "tabs"
+    ]
+  },
+  "overrides": {
+    "@parcel/watcher": "2.1.0"
+  },
+  "@parcel/resolver-default": {
+    "packageExports": true
+  }
 }
