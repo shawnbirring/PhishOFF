@@ -139,19 +139,26 @@ app.get("/urls", async (req, res) => {
 const isTestRun = process.argv.includes("--test-run");
 
 if (isTestRun) {
-  const server = app.listen(3000, () => {
+  const server = app.listen(3000, async () => {
     console.log("Test run: Server started on port 3000");
-    
-    // Close the server immediately after starting
-    server.close(() => {
+    // Close the server
+    server.close(async () => {
       console.log("Test run: Server stopped");
-      mongoose.connection.close(() => {
+      try {
+        // Close MongoDB connection (Promise-based)
+        await mongoose.connection.close();
         console.log("Test run: MongoDB connection closed");
-        redis.quit(() => {
-          console.log("Test run: Redis connection closed");
-          process.exit(0); // Exit cleanly
-        });
-      });
+
+        // Close Redis connection (Promise-based)
+        await redis.quit();
+        console.log("Test run: Redis connection closed");
+
+        // Exit cleanly
+        process.exit(0);
+      } catch (err) {
+        console.error("Error during test run shutdown:", err);
+        process.exit(1);
+      }
     });
   });
 } else {
