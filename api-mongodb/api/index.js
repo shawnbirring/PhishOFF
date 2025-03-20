@@ -135,8 +135,29 @@ app.get("/urls", async (req, res) => {
   res.json(urls);
 });
 
-// Start server
-app.listen(3000, () => console.log(`Server running on port ${3000}`));
+// Handle test run
+const isTestRun = process.argv.includes("--test-run");
+
+if (isTestRun) {
+  const server = app.listen(3000, () => {
+    console.log("Test run: Server started on port 3000");
+    
+    // Close the server immediately after starting
+    server.close(() => {
+      console.log("Test run: Server stopped");
+      mongoose.connection.close(() => {
+        console.log("Test run: MongoDB connection closed");
+        redis.quit(() => {
+          console.log("Test run: Redis connection closed");
+          process.exit(0); // Exit cleanly
+        });
+      });
+    });
+  });
+} else {
+  // Normal server start
+  app.listen(3000, () => console.log(`Server running on port ${3000}`));
+}
 
 // Hosting
 module.exports = app;

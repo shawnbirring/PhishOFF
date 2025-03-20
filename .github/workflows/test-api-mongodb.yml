@@ -19,7 +19,7 @@ jobs:
       - name: Set Up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Dependencies
         run: |
@@ -29,4 +29,7 @@ jobs:
       - name: Run Tests
         run: |
           cd api-mongodb
-          npm run build
+          npm run test
+        env:
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
