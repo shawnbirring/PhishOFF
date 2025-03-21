@@ -29,4 +29,3 @@ jobs:
       - name: Run Tests
         run: |
           cd backend
-          uvicorn main:app --reload
