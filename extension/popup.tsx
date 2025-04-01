@@ -13,7 +13,7 @@ function IndexPopup() {
     const [showEmailContent, setShowEmailContent] = useState(false);
     const [showUrl, setShowUrl] = useState(false);
     const [emailSubject, setEmailSubject] = useState("No subject found");
-
+    const GOOGLE_SAFE_BROWSING_API_KEY = "AIzaSyCRhQqQgiOqsJEf33tBhGf2h11_puR2RPU";
     const maliciousDomains = ["phishing.com", "malicious.com", "fakewebsite.com"];
 
     const fetchEmails = async () => {
@@ -96,11 +96,57 @@ function IndexPopup() {
         return atob(base64);
     };
 
-    const checkForPhishingInEmail = (email) => {
-        const phishingFound = maliciousDomains.some((domain) => email.includes(domain));
-        setEmailPhishingStatus(phishingFound ? "Phishing detected in the email!" : "No phishing detected in the email.");
+    const checkForPhishingInEmail = async (email) => {
+        // Extract URLs from email content
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        const urls = email.match(urlRegex) || [];
+
+        let phishingFound = false;
+        let safeBrowsingDetected = false;
+
+        // Check against malicious domains list
+        phishingFound = urls.some(url => maliciousDomains.some(domain => url.includes(domain)));
+
+        // Check URLs with Google Safe Browsing API
+        if (urls.length > 0) {
+            const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${GOOGLE_SAFE_BROWSING_API_KEY}`;
+            const requestBody = {
+                client: {
+                    clientId: "your-client-id",
+                    clientVersion: "1.0"
+                },
+                threatInfo: {
+                    threatTypes: ["MALWARE", "SOCIAL_ENGINEERING"],
+                    platformTypes: ["ANY_PLATFORM"],
+                    threatEntryTypes: ["URL"],
+                    threatEntries: urls.map(url => ({ url }))
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    body: JSON.stringify(requestBody),
+                    headers: { "Content-Type": "application/json" }
+                });
+                const data = await response.json();
+                safeBrowsingDetected = data.matches && data.matches.length > 0;
+            } catch (error) {
+                console.error("Safe Browsing API error:", error);
+            }
+        }
+
+        // Determine phishing status
+        if (phishingFound || safeBrowsingDetected) {
+            setEmailPhishingStatus("Phishing detected in the email!");
+            phishingFound = true;
+        } else {
+            setEmailPhishingStatus("No phishing detected in the email.");
+        }
     };
 
+
+    
     const checkUrlPhishing = () => {
         const phishingFound = maliciousDomains.some((domain) => urlToCheck.includes(domain));
         const statusMessage = phishingFound ? "Warning: This URL is potentially malicious!" : "This URL seems safe.";
@@ -143,7 +189,7 @@ function IndexPopup() {
                     <h2>Email Content:</h2>
                     <button onClick={fetchEmails}>Latest Email</button>
                     <button  onClick={() => checkForPhishingInEmail(emailContent)}>Check for Phishing</button>
-                    <div style={{ fontSize: "25px",color: emailPhishingStatus.includes("phishingFound") ? "red" : "green", fontWeight: "bold" }}>
+                    <div style={{ fontSize: "25px", color: emailPhishingStatus.includes("Phishing detected") ? "red" : "green", fontWeight: "bold" }}>
                         {emailPhishingStatus}
                     </div>
                    
@@ -184,5 +230,5 @@ function IndexPopup() {
     );
 }
 
-export default IndexPopup;
+export default IndexPopup
 
