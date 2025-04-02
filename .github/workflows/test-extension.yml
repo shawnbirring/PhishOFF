@@ -33,6 +33,6 @@ jobs:
       - name: Run Plasmo Build with Debugging and Increased Memory
         run: |
           cd extension
-          DEBUG=plasmo:* NODE_OPTIONS="--max-old-space-size=8192" npx plasmo build  # Enable debug logging and increase memory limit
+          DEBUG=* NODE_OPTIONS="--max-old-space-size=8192" npx plasmo build --verbose
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
