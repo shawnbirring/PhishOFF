@@ -11,29 +11,6 @@ export interface AnalysisSummary {
     message: string;
 }
 
-async function reportMaliciousUrl(url: string): Promise<void> {
-    try {
-        const API_URL = getApiUrl();
-        const response = await fetch(`${API_URL}/add-url`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                url,
-                status: "malicious",
-            }),
-        });
-        if (!response.ok) {
-            console.error(
-                `[Analyzer] Failed to report malicious URL: ${response.status}`
-            );
-        } else {
-            console.log(`[Analyzer] Reported malicious URL: ${url}`);
-        }
-    } catch (error) {
-        console.error(`[Analyzer] Error reporting malicious URL: ${error}`);
-    }
-}
-
 // List of all checks
 const allChecks: SafetyCheck[] = [new HttpsCheck()];
 
@@ -67,14 +44,8 @@ export async function analyzeUrl(
     const malicious = results.filter(r => r.type === "malicious").length;
     const unknown = results.filter(r => r.type === "unknown").length;
 
-    // Report malicious URLs in the background
-    results.forEach(result => {
-        if (result.type === "malicious") {
-            reportMaliciousUrl(url); // Fire-and-forget, no await
-        }
-    });
+    reportUrlStatus(url, results); // Fire-and-forget, no await
 
-    // Generate summary message
     let message = `URL passed ${passed} out of ${total} tests. `;
     if (malicious > 0) {
         message += `We are ${100 - score}% confident this URL is unsafe due to ${malicious} malicious indicators.`;
@@ -85,4 +56,32 @@ export async function analyzeUrl(
     }
 
     return { url, results, score, passed, total, message };
+}
+
+
+async function reportUrlStatus(url: string, results: CheckResult[]): Promise<void> {
+    try {
+        const API_URL = getApiUrl();
+        // Determine overall status based on results
+        const maliciousCount = results.filter(r => r.type === "malicious").length;
+        const safeCount = results.filter(r => r.type === "safe").length;
+        const status = maliciousCount > 0 ? "malicious" : safeCount > 0 ? "safe" : "unknown";
+
+        const response = await fetch(`${API_URL}/add-url`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                url,
+                status, // Overall status: "malicious", "safe", or "unknown"
+            }),
+        });
+
+        if (!response.ok) {
+            console.error(`[Analyzer] Failed to report URL status: ${response.status}`);
+        } else {
+            console.log(`[Analyzer] Reported URL status: ${url} as ${status}`);
+        }
+    } catch (error) {
+        console.error(`[Analyzer] Error reporting URL status: ${error}`);
+    }
 }
