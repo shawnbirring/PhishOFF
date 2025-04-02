@@ -31,7 +31,8 @@ jobs:
       - name: Run Plasmo Build with Increased Memory and Verbose Logging
         run: |
           cd extension
-          ulimit -s unlimited
-          NODE_OPTIONS="--max-old-space-size=8192" npm run build
+          export PARCEL_WORKER_BACKEND=process
+          npm run build
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
+          PARCEL_WORKER_BACKEND: process
