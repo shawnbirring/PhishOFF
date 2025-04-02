@@ -1,6 +1,6 @@
 import { useState } from "react"
 import "./styles/phishoff.css"
-//test
+
 interface ScanResult {
     isSafe: boolean;
     message: string;
