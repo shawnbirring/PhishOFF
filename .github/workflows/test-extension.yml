@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04  # Use stable Ubuntu version
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout Repository
@@ -22,16 +22,16 @@ jobs:
       - name: Install Dependencies
         run: |
           cd extension
-          npm install  # Using npm install instead of npm ci
+          npm install  # Use npm install instead of npm ci if necessary
 
       - name: Verify Plasmo Installation
         run: |
           cd extension
           npx plasmo --version  # Check if plasmo is installed
 
-      - name: Run Plasmo Build
+      - name: Run Plasmo Build with Increased Memory
         run: |
           cd extension
-          NODE_OPTIONS="--max-old-space-size=4096" npx plasmo build
+          NODE_OPTIONS="--max-old-space-size=8192" npx plasmo build  # Increase memory limit
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
