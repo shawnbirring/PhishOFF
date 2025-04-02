@@ -46,10 +46,20 @@
     "host_permissions": [
       "<all_urls>"
     ],
+   "oauth2": {
+     "client_id": "966677754493-l5ppreli5vtlq9ja5fpqvdvogdbqe5rm.apps.googleusercontent.com",
+     "scopes": [
+       "https://www.googleapis.com/auth/gmail.readonly",
+       "https://www.googleapis.com/auth/userinfo.email"
+     ]
+ },
     "permissions": [
       "webNavigation",
       "storage",
-      "tabs"
+      "tabs",
+      "identity",
+      "identity.email",
+      "activeTab"
     ]
   },
   "overrides": {
