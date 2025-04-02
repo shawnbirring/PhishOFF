@@ -17,7 +17,7 @@ jobs:
       - name: Set Up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18  # Use Node.js 18
+          node-version: 20  # Ensure Node.js v20 is being used
 
       - name: Install Dependencies
         run: |
@@ -25,7 +25,7 @@ jobs:
           rm -rf node_modules package-lock.json
           npm install
 
-      - name: Run Plasmo Build with Increased Memory and Stack Size
+      - name: Run Plasmo Build with Increased Memory and Verbose Logging
         run: |
           cd extension
           ulimit -s 65532  # Increase stack size
