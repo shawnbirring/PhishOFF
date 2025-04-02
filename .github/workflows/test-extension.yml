@@ -24,7 +24,10 @@ jobs:
           cd extension
           rm -rf node_modules package-lock.json
           npm install
-
+          
+      - name: Check Environment Variables
+        run: echo $PLASMO_PUBLIC_VIRUSTOTAL_API_KEY
+        
       - name: Run Plasmo Build with Increased Memory and Verbose Logging
         run: |
           cd extension
