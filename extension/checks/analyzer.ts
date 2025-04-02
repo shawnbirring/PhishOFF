@@ -1,6 +1,7 @@
 import { type SafetyCheck, type CheckResult } from "./types";
 import { HttpsCheck } from "./HttpsCheck";
 import { DatabaseCheck } from "./DatabaseCheck";
+import { VirusTotalCheck } from "./VirusTotalCheck";
 import { getApiUrl } from "../utils/config";
 
 export interface AnalysisSummary {
@@ -13,7 +14,7 @@ export interface AnalysisSummary {
 }
 
 // List of all checks
-const allChecks: SafetyCheck[] = [new HttpsCheck(), new DatabaseCheck()];
+const allChecks: SafetyCheck[] = [new HttpsCheck(), new DatabaseCheck(), new VirusTotalCheck()];
 
 export async function analyzeUrl(
     url: string,
