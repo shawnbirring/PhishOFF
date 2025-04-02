@@ -17,21 +17,22 @@ jobs:
       - name: Set Up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 18  # Use Node 18 instead of Node 20 for compatibility
 
       - name: Install Dependencies
         run: |
           cd extension
-          npm install  # Use npm install instead of npm ci if necessary
+          npm install  # Install dependencies
+          npm rebuild  # Rebuild any native modules that could be problematic
 
       - name: Verify Plasmo Installation
         run: |
           cd extension
-          npx plasmo --version  # Check if plasmo is installed
+          npx plasmo --version  # Verify Plasmo installation
 
-      - name: Run Plasmo Build with Increased Memory
+      - name: Run Plasmo Build with Debugging and Increased Memory
         run: |
           cd extension
-          NODE_OPTIONS="--max-old-space-size=8192" npx plasmo build  # Increase memory limit
+          DEBUG=plasmo:* NODE_OPTIONS="--max-old-space-size=8192" npx plasmo build  # Enable debug logging and increase memory limit
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
