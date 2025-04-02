@@ -25,10 +25,12 @@ jobs:
           NODE_OPTIONS="--max-old-space-size=4096" npm run build
           rm -rf node_modules package-lock.json
           npm install
+          npx plasmo --version 
 
       - name: Run Plasmo Tests
         run: |
           cd extension
-          npm run build
+          npx plasmo build
+         
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
