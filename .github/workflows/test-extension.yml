@@ -31,8 +31,7 @@ jobs:
       - name: Run Plasmo Build with Increased Memory and Verbose Logging
         run: |
           cd extension
-          ulimit -s 65532  # Increase stack size
-          ulimit -v unlimited  # Increase virtual memory limit
-          DEBUG=plasmo:* NODE_OPTIONS="--max-old-space-size=8192" npx plasmo build --verbose
+          ulimit -s unlimited
+          NODE_OPTIONS="--max-old-space-size=8192" npm run build
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
