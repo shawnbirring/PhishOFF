@@ -23,13 +23,22 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo mkdir -p /backend
-          sudo rsync -a --delete ${{ github.workspace }}/backend/ /backend/
+          # Clean environment
+          unset PYTHONPATH
+          unset PYTHONHOME
+          
+          # Create directory with proper permissions
+          mkdir -p /backend
+          chown -R $USER:$USER /backend
+          
+          # Copy files as current user
+          rsync -a --delete ${{ github.workspace }}/backend/ /backend/
           
           if [ ! -d "/backend/venv" ]; then
             python -m venv /backend/venv
           fi
           
+          # Install requirements as current user
           source /backend/venv/bin/activate
           pip install --upgrade pip
           pip install -r /backend/requirements.txt
@@ -41,5 +50,5 @@ jobs:
 
       - name: Verify deployment
         run: |
-          sleep 5
+          sleep 15
           curl -s http://localhost:8000/docs | grep "FastAPI" || exit 1
