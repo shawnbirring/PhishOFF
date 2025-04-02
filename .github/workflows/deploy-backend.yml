@@ -23,13 +23,21 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo cp -r ${{ github.workspace }} /backend
-          cd /backend
-          source venv/bin/activate
-          pip install -r requirements.txt
+          sudo mkdir -p /backend
+          sudo rsync -a --delete ${{ github.workspace }}/backend/ /backend/
+          
+          if [ ! -d "/backend/venv" ]; then
+            python -m venv /backend/venv
+          fi
+          
+          source /backend/venv/bin/activate
+          pip install --upgrade pip
+          pip install -r /backend/requirements.txt
 
       - name: Restart FastAPI service
-        run: sudo systemctl restart fastapi
+        run: |
+          sudo systemctl daemon-reload
+          sudo systemctl restart fastapi
 
       - name: Verify deployment
         run: |
