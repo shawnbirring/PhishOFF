@@ -22,12 +22,16 @@ jobs:
       - name: Install Dependencies
         run: |
           cd extension
-          npm ci  # Install dependencies using npm ci to ensure clean install from package-lock.json
-          npx plasmo --version  # Verify plasmo installation
+          npm install  # Using npm install instead of npm ci
 
-      - name: Run Plasmo Tests
+      - name: Verify Plasmo Installation
         run: |
           cd extension
-          NODE_OPTIONS="--max-old-space-size=4096" npx plasmo build  # Run plasmo build with increased memory limit
+          npx plasmo --version  # Check if plasmo is installed
+
+      - name: Run Plasmo Build
+        run: |
+          cd extension
+          NODE_OPTIONS="--max-old-space-size=4096" npx plasmo build
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
