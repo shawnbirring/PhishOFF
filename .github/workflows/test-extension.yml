@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04  # Use stable Ubuntu version
 
     steps:
       - name: Checkout Repository
@@ -22,15 +22,12 @@ jobs:
       - name: Install Dependencies
         run: |
           cd extension
-          NODE_OPTIONS="--max-old-space-size=4096" npm run build
-          rm -rf node_modules package-lock.json
-          npm install
-          npx plasmo --version 
+          npm ci  # Install dependencies using npm ci to ensure clean install from package-lock.json
+          npx plasmo --version  # Verify plasmo installation
 
       - name: Run Plasmo Tests
         run: |
           cd extension
-          npx plasmo build
-         
+          NODE_OPTIONS="--max-old-space-size=4096" npx plasmo build  # Run plasmo build with increased memory limit
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
