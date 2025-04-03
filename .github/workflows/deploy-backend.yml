@@ -21,7 +21,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t phishoff -f /backend/Dockerfile .
+          cd backend
+          docker build -t phishoff -f Dockerfile .
 
       - name: Deploy New Docker Image
         run: |
