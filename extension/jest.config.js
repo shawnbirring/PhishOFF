@@ -1,13 +1,12 @@
+/** @type {import('jest').Config} */
 module.exports = {
+  preset: 'ts-jest',  // ts-jest handles TypeScript transformation
   testEnvironment: 'jest-environment-jsdom',
-  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json', 'node'], // Add 'ts' and 'tsx' here
-  testMatch: [
-    '**/extension/__tests__/**/*.test.{js,ts,tsx}', 
-  ],
+  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json', 'node'],
+  testMatch: ['**/__tests__/**/*.(test|spec).{js,jsx,ts,tsx}'],
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': 'ts-jest',  // Use ts-jest to handle TypeScript files (.ts and .tsx)
-    "^.+\\.(ts|tsx|js|jsx)$": "babel-jest", // Keep babel-jest for JavaScript and JSX
+    '^.+\\.(ts|tsx)$': 'ts-jest', // ts-jest for TypeScript files
+    '^.+\\.(js|jsx)$': 'babel-jest', // babel-jest for JavaScript files
   },
-  preset: 'ts-jest',
   verbose: true,
 };
