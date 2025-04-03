@@ -4,9 +4,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv
 from api.main import api_router
+from model.loader import model_lifespan
 
 
-app = FastAPI()
+app = FastAPI(lifespan=model_lifespan)
 
 load_dotenv()
 DEV_MODE = os.getenv("DEV_MODE") == "True"
