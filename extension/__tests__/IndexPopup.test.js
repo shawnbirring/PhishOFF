@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import IndexPopup from "./popup";
+import IndexPopup from "../popup";
 
 describe("IndexPopup Component", () => {
     test("renders the component correctly", () => {
