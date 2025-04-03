@@ -61,6 +61,12 @@ const CheckingPage = () => {
     }
   }, [])
   
+  const handleViewDetailedAnalysis = (url: string) => {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL("tabs/analysis.html") + "?url=" + encodeURIComponent(url)
+    });
+  };
+  
   // Handle user choosing to proceed to unsafe site
   const handleProceedAnyway = () => {
     chrome.runtime.sendMessage({
@@ -165,6 +171,13 @@ const CheckingPage = () => {
                   className="btn btn-danger"
                 >
                   Proceed anyway (not recommended)
+                </button>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => handleViewDetailedAnalysis(originalUrlRef.current || url)}
+                  style={{ backgroundColor: '#3c6cf0', color: '#fff', padding: '0.5rem 1rem', borderRadius: '4px', marginLeft: '0.5rem' }}
+                >
+                  View Detailed Analysis
                 </button>
               </div>
             </div>
