@@ -1,4 +1,4 @@
-import { getApiKey } from '../utils/config';
+import { VirusTotalCheck } from '../checks/VirusTotalCheck';
 
 export interface ScanResult {
     isSafe: boolean;
@@ -61,18 +61,21 @@ export async function checkWebsite(url: string): Promise<ScanResult> {
         // If not found or status is unknown, continue with VirusTotal check
         console.log('[PhishOFF] URL not found in database or status unknown, checking VirusTotal...');
         
-        const apiKey = await getApiKey();
-        console.log('[PhishOFF] Got API key, submitting scan...');
-
-        const scanId = await submitUrlForScan(urlToCheck, apiKey);
-
-        if (!scanId) {
-            console.error('[PhishOFF] Failed to get scan ID');
-            return { isSafe: false, message: "Failed to scan URL" };
-        }
-
-        console.log('[PhishOFF] Got scan ID:', scanId);
-        const scanResult = await pollResults(scanId, apiKey);
+        // Use the VirusTotalCheck class for checking
+        const virusTotalChecker = new VirusTotalCheck();
+        const checkResult = await virusTotalChecker.check(urlToCheck);
+        
+        // Convert CheckResult to ScanResult format
+        const scanResult: ScanResult = {
+            isSafe: checkResult.type === 'safe',
+            message: checkResult.message,
+            details: {
+                harmless: checkResult.type === 'safe' ? 1 : 0,
+                malicious: checkResult.type === 'malicious' ? 1 : 0,
+                suspicious: 0,
+                undetected: 0
+            }
+        };
         
         // Save result to our database for future reference
         await saveUrlToDatabase(urlToCheck, scanResult.isSafe ? 'safe' : 'malicious');
