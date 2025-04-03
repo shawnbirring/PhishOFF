@@ -32,18 +32,9 @@
     "plasmo": "^0.90.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "cross-env": "^7.0.3",
-    "@babel/preset-env": "^7.16.0",
-    "@babel/preset-react": "^7.16.0",
-    "@babel/preset-typescript": "^7.16.0",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/jest-dom": "^5.16.5"
-    
+    "cross-env": "^7.0.3",  
   },
   "devDependencies": {
-    "jest": "^28.0.0",
-    "jest-environment-jsdom": "^28.0.0",
-    "babel-jest": "^27.4.6",
     "@ianvs/prettier-plugin-sort-imports": "4.1.1",
     "@types/chrome": "^0.0.258",
     "@types/node": "20.11.5",
@@ -51,7 +42,6 @@
     "@types/react-dom": "^18.2.18",
     "prettier": "3.2.4",
     "typescript": "5.3.3",
-    "ts-jest": "^28.x.x"
   },
   "manifest": {
     "host_permissions": [
