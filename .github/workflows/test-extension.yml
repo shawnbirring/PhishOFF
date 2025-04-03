@@ -30,7 +30,10 @@ jobs:
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
           PARCEL_WORKER_BACKEND: process
-
+          
+      - name: Install Jest globally (optional if needed)
+        run: npm install -g jest
+        
       - name: Run Tests
         run: cd extension && npm test
 
