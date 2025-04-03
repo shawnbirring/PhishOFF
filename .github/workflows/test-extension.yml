@@ -20,7 +20,7 @@ jobs:
           node-version: 20  # Ensure Node.js v20 is being used
 
       - name: Install Dependencies
-        run: |
+        run: 
           cd extension
           rm -rf node_modules package-lock.json
           npm install
@@ -29,10 +29,15 @@ jobs:
         run: echo $PLASMO_PUBLIC_VIRUSTOTAL_API_KEY
         
       - name: Run Plasmo Build with Increased Memory and Verbose Logging
-        run: |
+        run: 
           cd extension
           export PARCEL_WORKER_BACKEND=process
           npm run build
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
           PARCEL_WORKER_BACKEND: process
+          
+      - name: Run Tests
+        run: 
+          cd extension
+          npm test  
