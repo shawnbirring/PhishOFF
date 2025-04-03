@@ -22,7 +22,6 @@ jobs:
       - name: Install Dependencies
         run: cd extension && rm -rf node_modules package-lock.json && npm install
 
-          
       - name: Check Environment Variables
         run: echo $PLASMO_PUBLIC_VIRUSTOTAL_API_KEY
         
@@ -32,8 +31,6 @@ jobs:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
           PARCEL_WORKER_BACKEND: process
 
-          
       - name: Run Tests
-        run: 
-          cd extension
-          npm test  
+        run: cd extension && npm test
+
