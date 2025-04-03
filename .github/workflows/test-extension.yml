@@ -33,9 +33,6 @@ jobs:
           
       - name: Install jest 
         run: npm install --save-dev jest jest-environment-jsdom
-
-      - name: Clear Jest Cache
-        run: npm test -- --clearCache
         
       - name: Run Tests
         run: cd extension && npm test
