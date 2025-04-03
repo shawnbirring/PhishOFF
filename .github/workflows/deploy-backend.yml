@@ -2,10 +2,13 @@ name: Deploy FastAPI Backend
 
 on:
   push:
-    branches: [ main ]
+#    branches: [ main ]
+    # Temporary change for testing
+    branches: [ 19-feature-integration ]
   pull_request:
     branches:
-      - main
+      # Temporary change for testing
+      - 19-feature-integration
   workflow_dispatch:
 
 jobs:
@@ -16,18 +19,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Sync Code Changes
+      - name: Build Docker Image
         run: |
-          mkdir -p /backend
-          rsync -a --chown=$USER:$USER --delete ${{ github.workspace }}/ /backend/
-      -
-        name: Install dependencies
+          docker build -t phishoff -f /backend/Dockerfile .
+
+      - name: Deploy New Docker Image
         run: |
-          pip install --user -r backend/requirements.txt
+          docker run -d \
+          -p 8000:8000 \
+          -v /deployments/models:/model \
+          -v /deployments/secrets/.env:/app/.env \
+          --env-file /deployments/secrets/.env \
+          --gpus all \
+          --name phishoff \
+          phishoff 
+          
 
       - name: Verify deployment
         run: |
-          # Trigger reload
-          touch /backend/main.py
           sleep 15
           curl -s http://localhost:8000/docs | grep "FastAPI" || exit 1
