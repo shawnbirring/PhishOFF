@@ -1,0 +1,33 @@
+name: Deploy FastAPI Backend
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Sync Code Changes
+        run: |
+          mkdir -p /backend
+          rsync -a --chown=$USER:$USER --delete ${{ github.workspace }}/ /backend/
+      -
+        name: Install dependencies
+        run: |
+          pip install --user -r backend/requirements.txt
+
+      - name: Verify deployment
+        run: |
+          # Trigger reload
+          touch /backend/main.py
+          sleep 15
+          curl -s http://localhost:8000/docs | grep "FastAPI" || exit 1

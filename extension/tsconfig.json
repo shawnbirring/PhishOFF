@@ -6,7 +6,11 @@
   "include": [
     ".plasmo/index.d.ts",
     "./**/*.ts",
-    "./**/*.tsx"
+    "./**/*.tsx",
+    "src/**/*.ts", 
+    "src/**/*.tsx", 
+    "extension/**/*.ts", 
+    "extension/**/*.tsx"
   ],
   "compilerOptions": {
     "paths": {
@@ -14,6 +18,11 @@
         "./*"
       ]
     },
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
     "baseUrl": "."
   }
 }
