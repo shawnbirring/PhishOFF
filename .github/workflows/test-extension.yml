@@ -20,7 +20,7 @@ jobs:
           node-version: 20  # Ensure Node.js v20 is being used
 
       - name: Install Dependencies
-        run: cd extension && rm -rf node_modules package-lock.json && npm install
+        run: cd extension && rm -rf node_modules package-lock.json && npm install --legacy-peer-deps
 
       - name: Check Environment Variables
         run: echo $PLASMO_PUBLIC_VIRUSTOTAL_API_KEY
