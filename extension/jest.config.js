@@ -1,11 +1,11 @@
 export default {
-  preset: 'ts-jest/presets/default-esm',  // Use ESM mode
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jest-environment-jsdom',
-  moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx', 'json', 'node'],
-  testMatch: ['**/__tests__/**/*.(test|spec).{js,jsx,ts,tsx}'],
-  transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
-    '^.+\\.(js|jsx)$': 'babel-jest',
-  },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', { useESM: true }],
+  },
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
 };
