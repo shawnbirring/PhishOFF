@@ -38,6 +38,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       return false;
     }
+
+    if (message.action === "openAnalysisPage") {
+      // Open the URL analysis page in a new tab
+      chrome.tabs.create({
+        url: chrome.runtime.getURL(`tabs/analysis.html?url=${encodeURIComponent(message.url)}`)
+      });
+      return false;
+    }
     
     if (message.action === "getTabId" && sender.tab?.id) {
       sendResponse(sender.tab.id);
