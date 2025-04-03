@@ -6,7 +6,7 @@ module.exports = {
   ],
   transform: {
     '^.+\\.(js|jsx|ts|tsx)$': 'ts-jest',  // Use ts-jest to handle TypeScript files (.ts and .tsx)
-    '^.+\\.jsx?$': 'babel-jest', // Keep babel-jest for JavaScript and JSX
+    "^.+\\.(ts|tsx|js|jsx)$": "babel-jest", // Keep babel-jest for JavaScript and JSX
   },
   preset: 'ts-jest',
   verbose: true,
