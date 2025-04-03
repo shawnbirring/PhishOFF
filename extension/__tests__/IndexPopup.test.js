@@ -1,40 +1,31 @@
-import { render, screen } from "@testing-library/react";
-import IndexPopup from "../popup";
-import React from "react";
+const { render, screen } = require("@testing-library/react");
+const IndexPopup = require("../popup").default;
+const { checkForPhishingInEmail, isValidUrl } = require("../utils");
 
-// Mock local storage and chrome API (necessary for `chrome.storage.local`)
-global.chrome = {
-  storage: {
-    local: {
-      get: jest.fn((keys, callback) => callback({ GOOGLE_SAFE_BROWSING_API_KEY: "test-api-key" })),
-    },
-  },
-  identity: {
-    getAuthToken: jest.fn(({ interactive }, callback) => callback("fake-token")),
-  },
-  tabs: {
-    query: jest.fn((queryInfo, callback) => callback([{ url: "https://example.com" }])),
-  },
-};
-
-// Mock function to avoid errors from local utility functions inside the component
+// Mock external functions used in popup.tsx
 jest.mock("../utils", () => ({
   checkForPhishingInEmail: jest.fn().mockResolvedValue(false), // Mock as an async function
   isValidUrl: jest.fn((url) => url.startsWith("https://")), // Simple validation logic
 }));
 
-// Import mocked functions after jest.mock
-import { checkForPhishingInEmail, isValidUrl } from "../utils";
-
 describe("IndexPopup Component", () => {
   test("renders without crashing", () => {
     render(<IndexPopup />);
-    expect(screen.getByText(/PhishingOff/i)).toBeInTheDocument(); // Match actual component text
+    expect(screen.getByText(/some text in your component/i)).toBeInTheDocument();
   });
 
   test("checks for phishing detection", async () => {
-    const emailBody = "This is a test email with no phishing links.";
-    const result = await checkForPhishingInEmail(emailBody);
+    const fakeEmail = {
+      headers: [
+        { name: "Subject", value: "Test Email" },
+        { name: "From", value: "test@example.com" },
+        { name: "To", value: "user@example.com" },
+        { name: "Date", value: "Sun, 31 Mar 2024 12:00:00 GMT" },
+      ],
+      body: { data: "fakeBase64Data" },
+    };
+
+    const result = await checkForPhishingInEmail(fakeEmail);
     expect(result).toBe(false); // Matches the mock return value
   });
 
@@ -43,3 +34,4 @@ describe("IndexPopup Component", () => {
     expect(isValidUrl("invalid-url")).toBe(false);
   });
 });
+
