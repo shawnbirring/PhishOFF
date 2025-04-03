@@ -17,7 +17,7 @@
       }
     }
   },
-  "displayName": "Phish off",
+ "displayName": "Phish off",
   "version": "0.0.2",
   "description": "Protect against hackers!",
   "author": "Plasmo Corp. <foss@plasmo.com>",
@@ -25,10 +25,7 @@
     "dev": "plasmo dev",
     "build": "cross-env PARCEL_WORKER_BACKEND=process plasmo build --target=chrome-mv3",
     "package": "plasmo package",
-    "test": "jest --clearCache",
-    "jest": "^28.0.0", 
-    "jest-environment-jsdom": "^28.0.0"
-    
+    "test": "jest"
   },
   "dependencies": {
     "@plasmohq/storage": "^1.13.0",
@@ -38,10 +35,12 @@
     "cross-env": "^7.0.3",
     "@babel/preset-env": "^7.16.0",
     "@babel/preset-react": "^7.16.0",
-    "babel-jest": "^27.4.6",
     "@babel/preset-typescript": "^7.16.0"
   },
   "devDependencies": {
+    "jest": "^28.0.0",
+    "jest-environment-jsdom": "^28.0.0",
+    "babel-jest": "^27.4.6",
     "@ianvs/prettier-plugin-sort-imports": "4.1.1",
     "@types/chrome": "^0.0.258",
     "@types/node": "20.11.5",
