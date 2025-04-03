@@ -24,7 +24,8 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "cross-env PARCEL_WORKER_BACKEND=process plasmo build --target=chrome-mv3",
-    "package": "plasmo package"
+    "package": "plasmo package",
+    "test": "jest"
   },
   "dependencies": {
     "@plasmohq/storage": "^1.13.0",
