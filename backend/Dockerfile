@@ -12,7 +12,7 @@ ENV VIRT_ENV=/opt/venv
 RUN python3 -m venv $VIRT_ENV
 ENV PATH="$VIRT_ENV/bin:$PATH"
 
-RUN pip3 install torch torchvision torchaudio transformers bitsandbytes accelerate
+RUN pip3 install torch torchvision torchaudio transformers bitsandbytes accelerate packaging ninja wheel
 RUN pip3 install flash-attn --no-build-isolation
 
 COPY requirements.txt .
