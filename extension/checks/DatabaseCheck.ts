@@ -15,12 +15,13 @@ export class DatabaseCheck implements SafetyCheck {
     }
 
     getWeight(): number {
-        return 40; // High weight since it’s based on prior verified results
+        return 40; // High weight since it's based on prior verified results
     }
 
     async check(url: string): Promise<CheckResult> {
         try {
-            const API_URL = getApiUrl();
+            const API_URL = "http://localhost:3000";
+            console.log(`[DatabaseCheck] Checking URL in database: ${url}`);
             const response = await fetch(`${API_URL}/check-url`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -28,6 +29,7 @@ export class DatabaseCheck implements SafetyCheck {
             });
 
             if (!response.ok) {
+                console.error(`[DatabaseCheck] Server returned status ${response.status}`);
                 return {
                     name: this.getName(),
                     message: `Failed to check database (status: ${response.status})`,
@@ -36,6 +38,7 @@ export class DatabaseCheck implements SafetyCheck {
             }
 
             const data = await response.json();
+            console.log(`[DatabaseCheck] Database response:`, data);
             const status = data.status; // "safe", "malicious", or "unknown"
 
             switch (status) {
