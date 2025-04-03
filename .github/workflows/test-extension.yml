@@ -27,13 +27,11 @@ jobs:
         run: echo $PLASMO_PUBLIC_VIRUSTOTAL_API_KEY
         
       - name: Run Plasmo Build with Increased Memory and Verbose Logging
-        run: 
-          cd extension
-          export PARCEL_WORKER_BACKEND=process
-          npm run build
+        run: cd extension && export PARCEL_WORKER_BACKEND=process && npm run build
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
           PARCEL_WORKER_BACKEND: process
+
           
       - name: Run Tests
         run: 
