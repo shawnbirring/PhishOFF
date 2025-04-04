@@ -7,6 +7,7 @@ const CheckingPage = () => {
   const [url, setUrl] = useState<string>("")
   const [status, setStatus] = useState<"checking" | "safe" | "unsafe">("checking")
   const [result, setResult] = useState<ScanResult | null>(null)
+  const [checkPhase, setCheckPhase] = useState<string>("Initializing...")
   const listenerInitialized = useRef(false)
   const originalUrlRef = useRef<string>("")
   
@@ -30,6 +31,12 @@ const CheckingPage = () => {
       
       chrome.runtime.onMessage.addListener((message) => {
         console.log("[PhishOFF] Checking page received message:", message);
+        
+        // Handle check phase updates
+        if (message.action === "checkPhaseUpdate") {
+          setCheckPhase(message.phase);
+          return;
+        }
         
         if (message.action === "checkResult") {
           setResult(message.result)
@@ -84,17 +91,30 @@ const CheckingPage = () => {
         </div>
         
         {status === "checking" && (
-          <div>
-            <div className="status-icon checking">
-              <img 
-                src={loadingGif}
-                alt="Loading" 
-                style={{ width: "100%", height: "100%", objectFit: "contain" }}
-              />
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="status-icon checking">
+                <img 
+                  src={loadingGif}
+                  alt="Loading" 
+                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                />
+              </div>
             </div>
-            <h2 className="heading">Checking Website Safety...</h2>
-            <div className="url-display">
+            
+            <h2 className="heading mb-3">Checking Website Safety...</h2>
+            
+            <div className="url-display mb-4">
               <span>{url}</span>
+            </div>
+            
+            <div className="check-phase">
+              <span>{checkPhase}</span>
+              <div className="phase-dots mt-2">
+                <span className="phase-dot"></span>
+                <span className="phase-dot"></span>
+                <span className="phase-dot"></span>
+              </div>
             </div>
           </div>
         )}
