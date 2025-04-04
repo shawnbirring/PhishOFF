@@ -1,0 +1,44 @@
+name: Deploy FastAPI Backend
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Remove Existing Container
+        run: |
+          docker stop phishoff
+          docker rm phishoff
+
+      - name: Build Docker Image
+        run: |
+          cd backend
+          docker build -t phishoff -f Dockerfile .
+
+      - name: Deploy New Docker Image
+        run: |
+          docker run -d \
+          -p 8000:8000 \
+          -v /deployments/models:/model \
+          -v /deployments/secrets/.env:/app/.env \
+          --env-file /deployments/secrets/.env \
+          --gpus all \
+          --name phishoff \
+          phishoff 
+          
+
+      - name: Verify deployment
+        run: |
+          sleep 15
+          curl -s http://localhost:8000/docs | grep "FastAPI" || exit 1
