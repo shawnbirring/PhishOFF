@@ -35,7 +35,7 @@ jobs:
           PARCEL_WORKER_BACKEND: process
           
       - name: Run Tests  
-        run: cd extension
-             npm test -- --ci --coverage 
+        run: cd extension && npm test -- --ci --coverage
+
      
 
