@@ -28,6 +28,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-typescript": "^7.16.0",
     "@plasmohq/storage": "^1.13.0",
     "plasmo": "^0.90.3",
     "react": "^18.2.0",
