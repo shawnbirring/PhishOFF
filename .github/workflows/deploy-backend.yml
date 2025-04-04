@@ -2,13 +2,10 @@ name: Deploy FastAPI Backend
 
 on:
   push:
-#    branches: [ main ]
-    # Temporary change for testing
-    branches: [ 19-feature-integration ]
+    branches: [ main ]
   pull_request:
     branches:
-      # Temporary change for testing
-      - 19-feature-integration
+      - main
   workflow_dispatch:
 
 jobs:
