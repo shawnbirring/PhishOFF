@@ -4,5 +4,5 @@ router = APIRouter()
 
 
 @router.get("/")
-async def get_default():
+async def health():
     return "API is Running!"
