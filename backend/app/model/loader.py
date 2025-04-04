@@ -18,8 +18,7 @@ def load_model(model_location):
 
     model = DistilBertForSequenceClassification.from_pretrained(
         model_location,
-        torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-        attn_implementation="flash_attention_2"
+        torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float32
     ).to(device)
 
     tokenizer = DistilBertTokenizer.from_pretrained(model_location)
