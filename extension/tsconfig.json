@@ -23,7 +23,6 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowJs": true,
-    "verbatimModuleSyntax": false,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "esModuleInterop": true,
