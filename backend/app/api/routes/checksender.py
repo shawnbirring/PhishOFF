@@ -1,26 +1,33 @@
 from email import policy
-from email.parser import BytesParser
+from email.parser import Parser
 from email.headerregistry import Address
 import requests
 import re
 import os
 import ipaddress
 from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, Request, HTTPException
+from api.dependencies import check_key
+from pydantic import BaseModel
 
+router = APIRouter()
 load_dotenv()
 ABUSEIPDB_API_KEY = os.getenv("AbuseIPDB-API-key")
 
 
-def parse_sender_ip(eml_file_path):
+class EML(BaseModel):
+    eml_text: str
+
+
+def parse_sender_ip(eml):
     """
-    Parse sender IP from eml file.
+    Parse sender IP from eml file text.
 
     :param: File path of eml file to parse
     :return: String of IP address
     """
-    with open(eml_file_path, "rb") as eml_file:
-        msg = BytesParser(policy=policy.default).parse(eml_file)
 
+    msg = Parser(policy=policy.default).parsestr(eml)
     # extract "Received" headers
     received_headers = msg.get_all("Received", [])
 
@@ -68,15 +75,14 @@ def get_email_domain(email_address):
         return None
 
 
-def parse_sender(eml_file_path):
+def parse_sender(eml):
     """
     Parse sender address from eml file.
 
-    :param eml_file_path: File path of eml file to parse
+    :param eml_file_path: File path of eml file text to parse
     :return: String of sender address
     """
-    with open(eml_file_path, "rb") as eml_file:
-        msg = BytesParser(policy=policy.default).parse(eml_file)
+    msg = Parser(policy=policy.default).parsestr(eml)
     sender = msg["From"]
 
     if sender:
@@ -151,9 +157,31 @@ def analyze_sender(sender_address, sender_ip):
     return all(suspicion_list)
 
 
-eml_path = "/Users/alexandrawong/Documents/University/BCIT/Bachelor of Science Applied Computer Science 2025/Term 5 (2025 Winter)/COMP 7082 Software Engineering/Sample EML/Submission receipt.eml"
-sender = parse_sender(eml_path)
-ip = parse_sender_ip(eml_path)
-print("suspicious?", analyze_sender(sender, ip))
-print(check_abuseipdb(ip))
-print("sender address:", sender, "\nip address:",ip)
+@router.post("/checksender",
+            dependencies=[Depends(check_key)]
+            )
+async def check_sender(
+        request: Request,
+        input_data: EML
+):
+    if input_data.eml_text is None:
+        raise HTTPException(status_code=400, detail="Missing email content")
+
+    print("Recieved headers:", input_data.eml_text)
+
+    sender = parse_sender(input_data.eml_text)
+    ip = parse_sender_ip(input_data.eml_text)
+
+
+    suspicious = analyze_sender(sender, ip)
+    ip_check = check_abuseipdb(ip)
+    print("sender address:", sender, "\nip address:", ip)
+
+    response = {
+        "sender": sender,
+        "ip": ip,
+        "suspicious": suspicious,
+        "ip_check": ip_check
+    }
+
+    return response

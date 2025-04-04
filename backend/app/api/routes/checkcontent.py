@@ -8,7 +8,7 @@ import torch
 router = APIRouter()
 
 
-class RequestParameters(BaseModel):
+class EmailContents(BaseModel):
     email_contents: str
 
 
@@ -25,7 +25,7 @@ def clean_text(text):
             )
 async def check_contents(
         request: Request,
-        input_data: RequestParameters,
+        input_data: EmailContents,
 ):
     model = request.app.state.model
     tokenizer = request.app.state.tokenizer
