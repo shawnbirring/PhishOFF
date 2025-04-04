@@ -1,5 +1,5 @@
+import React from "react";
 import { useState, useEffect } from "react";
-import ConsentModal from 'ConsentModal';
 function IndexPopup() {
     const [emailContent, setEmailContent] = useState("Click the button to load email");
     const [emailSender, setEmailSender] = useState("Unknown");
@@ -17,16 +17,7 @@ function IndexPopup() {
     const maliciousDomains = ["phishing.com", "malicious.com", "fakewebsite.com"];
     const [userConsented, setUserConsented] = useState(false);
 
-    const handleUserConsent = () => {
-        localStorage.setItem('userConsent', 'true');
-        setUserConsented(true);
-        checkCurrentWebsite();
-    };
-
-    const handleUserConsentRevocation = () => {
-        localStorage.removeItem('userConsent');
-        setUserConsented(false);
-    };
+    
 
 
     const fetchEmails = async () => {
@@ -39,7 +30,7 @@ function IndexPopup() {
                         else reject(new Error("No token returned"));
                     });
                 });
-
+                type headers = { name: string; value: string };
                 const response = await fetch("https://www.googleapis.com/gmail/v1/users/me/messages?maxResults=1", {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -52,11 +43,11 @@ function IndexPopup() {
                     });
                     const messageData = await messageResponse.json();
                     const headers = messageData.payload.headers;
-                    const emailSubject = headers.find((h) => h.name === "Subject")?.value || "No subject found";
+                    const emailSubject = headers.find((h: headers) => h.name === "Subject")?.value || "No subject found";
                     setEmailSubject(emailSubject);
-                    setEmailSender(headers.find((h) => h.name === "From")?.value || "Unknown");
-                    setEmailReceiver(headers.find((h) => h.name === "To")?.value || "Unknown");
-                    setEmailReceivedTime(headers.find((h) => h.name === "Date")?.value || "Unknown");
+                    setEmailSender(headers.find((h: headers) => h.name === "From")?.value || "Unknown");
+                    setEmailReceiver(headers.find((h: headers) => h.name === "To")?.value || "Unknown");
+                    setEmailReceivedTime(headers.find((h: headers) => h.name === "Date")?.value || "Unknown");
 
                     const emailBody = extractEmailBody(messageData.payload);
                     if (emailBody) {
@@ -76,7 +67,7 @@ function IndexPopup() {
         }
     };
 
-    const extractEmailBody = (payload) => {
+    const extractEmailBody = (payload: any) => {
         // Check if the email body is directly available in the body.data (plain-text)
         if (payload.body?.data) {
             return decodeBase64Url(payload.body.data);
@@ -96,7 +87,7 @@ function IndexPopup() {
     };
 
     // Function to decode base64url to a normal string
-    const decodeBase64Url = (base64Url) => {
+    const decodeBase64Url = (base64Url: string) => {
         // Fix base64url (replace `-` with `+` and `_` with `/`)
         let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
 
@@ -109,15 +100,9 @@ function IndexPopup() {
         return atob(base64);
     };
 
-    useEffect(() => {
-        // Directly show the consent modal for testing (can be removed in production)
-        setUserConsented(false);  // Forcing it to show the consent modal
-    }, []);
-
-
 
     // New common phishing detection function
-    const checkForPhishing = async (urls) => {
+    const checkForPhishing = async (urls: string[]) => {
         const apiKey = await getApiKey();  // Fetch the API Key securely
         let phishingFound = false;
 
@@ -171,7 +156,7 @@ function IndexPopup() {
         });
     };
 
-    const checkForPhishingInEmail = async (email) => {
+    const checkForPhishingInEmail = async (email: any) => {
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         const urls = email.match(urlRegex) || [];
         const phishingFound = await checkForPhishing(urls);
@@ -192,7 +177,7 @@ function IndexPopup() {
         setUrlStatus(statusMessage);
     };
 
-    const handleUrlChange = (e) => {
+    const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newUrl = e.target.value.trim(); // Remove leading/trailing spaces
         setUrlToCheck(newUrl);
 
@@ -207,7 +192,7 @@ function IndexPopup() {
 
 
     // Function to validate URL format
-    const isValidUrl = (url) => {
+    const isValidUrl = (url: string) => {
         const urlPattern = /^(https?:\/\/)([\w-]+(\.[\w-]+)+)(\/[\w-./?%&=]*)?$/;
         return urlPattern.test(url);
     };
@@ -225,20 +210,7 @@ function IndexPopup() {
         });
     };
 
-    useEffect(() => {
-        checkCurrentWebsite();
-    }, []);
-
-    // Ensure consistent hook call order by keeping hooks at the top level
-    if (!userConsented) {
-        return (
-            <ConsentModal
-                onConsent={handleUserConsent}
-                onDecline={handleUserConsentRevocation}
-            />
-        );
-    }
-
+    
     return (
         <div style={{
             padding: 16, backgroundColor: "#c3dbe7",
