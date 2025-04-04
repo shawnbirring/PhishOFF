@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import type { ScanResult } from "../background/website_check"
 import "../styles/phishoff.css"
+import loadingGif from "url:../assets/LoadingRod.gif"
 
 const CheckingPage = () => {
   const [url, setUrl] = useState<string>("")
@@ -85,7 +86,11 @@ const CheckingPage = () => {
         {status === "checking" && (
           <div>
             <div className="status-icon checking">
-              <div className="spinner"></div>
+              <img 
+                src={loadingGif}
+                alt="Loading" 
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              />
             </div>
             <h2 className="heading">Checking Website Safety...</h2>
             <div className="url-display">

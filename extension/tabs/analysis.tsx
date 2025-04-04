@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "../styles/phishoff.css";
 import { analyzeUrl, type AnalysisSummary } from "../checks/analyzer";
+import loadingGif from "url:../assets/LoadingRod.gif";
 
 function AnalysisPage() {
   const [analysis, setAnalysis] = useState<AnalysisSummary | null>(null);
@@ -234,8 +235,15 @@ function AnalysisPage() {
 
         {loading && (
           <div className="loading flex flex-col items-center justify-center py-10">
-            <div className="spinner mr-2 w-16 h-16"></div>
-            <span className="mt-4 text-xl">Analyzing URL...</span>
+            <img 
+              src={loadingGif}
+              alt="Loading" 
+              className="w-16 h-16"
+              style={{ width: "50%", height: "50%", objectFit: "contain" }}
+            />
+            <div className="mt-4">
+              <h1 className="text-xl">Analyzing URL...</h1>
+            </div>
           </div>
         )}
 
