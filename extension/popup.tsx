@@ -1,4 +1,5 @@
-﻿import { useState, useEffect } from "react";
+﻿import React from "react";
+import { useState, useEffect } from "react";
 import ConsentModal from 'ConsentModal';
 function IndexPopup() {
     const [emailContent, setEmailContent] = useState("Click the button to load email");
@@ -116,7 +117,7 @@ function IndexPopup() {
 
    
 
-    // New common phishing detection function
+    // Check email content for phishing (URL using safebrowsing API)
     const checkForPhishing = async (urls) => {
         const apiKey = await getApiKey();  // Fetch the API Key securely
         let phishingFound = false;
@@ -171,12 +172,45 @@ function IndexPopup() {
         });
     };
 
+   
+
+    // Check email content for phishing (new API for overall content)
+    const checkEmailForPhishingContent = async (email) => {
+        // Assuming you have an API to check the email content
+        const apiUrl = "https://maximillianyong.duckdns.org/api/v1/checkcontents?api-key=480be386-87f4-4e1b-bec7-f6d91034c387"; // Replace with your API URL
+
+        const requestBody = {
+            email_contents: email
+        };
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: "POST",
+                body: JSON.stringify(requestBody),
+                headers: { "Content-Type": "application/json" }
+            });
+            const data = await response.json();
+            console.log("Response data:", data);
+
+            if (data.response === "Phishing") {
+               
+                return true;
+            }
+        } catch (error) {
+            console.error("Error checking email content for phishing:", error);
+        }
+
+        return false;
+    };
+
+    // Check email content for phishing
     const checkForPhishingInEmail = async (email) => {
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         const urls = email.match(urlRegex) || [];
-        const phishingFound = await checkForPhishing(urls);
+        const phishingUrlsFound = await checkForPhishing(urls);
+        const phishingContentFound = await checkEmailForPhishingContent(email);
 
-        if (phishingFound) {
+        if (phishingUrlsFound || phishingContentFound) {
             setEmailPhishingStatus("Phishing detected in the email!");
             setEmailPhishingUrls(urls); // Store the phishing URLs found
         } else {
@@ -185,7 +219,7 @@ function IndexPopup() {
         }
     };
 
-
+    //checking the input URL 
     const checkUrlPhishing = () => {
         const phishingFound = maliciousDomains.some(domain => urlToCheck.includes(domain));
         const statusMessage = phishingFound ? "Warning: This URL is potentially malicious!" : "This URL seems safe.";
@@ -212,7 +246,7 @@ function IndexPopup() {
         return urlPattern.test(url);
     };
 
-
+    // Function to check curernt website if phishing
     const checkCurrentWebsite = () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const currentUrl = tabs[0]?.url || "";
@@ -225,6 +259,7 @@ function IndexPopup() {
         });
     };
 
+    //Automatically execute the checkCurrentWebsite function
     useEffect(() => {
         checkCurrentWebsite();
     }, []);

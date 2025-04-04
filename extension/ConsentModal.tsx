@@ -49,9 +49,6 @@ const ConsentModal: React.FC<ConsentModalProps> = ({ onConsent, onDecline }) => 
                     <button onClick={onConsent}>
                        I agree!
                     </button>
-                    <button onClick={onDecline}>
-                       I do not agree.
-                    </button>
                 </div>
             </div>
         </div>

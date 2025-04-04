@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(() => {
         if (!result.GOOGLE_SAFE_BROWSING_API_KEY) {
             // Store API key if it doesn't exist
             chrome.storage.local.set({
-                GOOGLE_SAFE_BROWSING_API_KEY: 'AIzaSyCRhQqQgiOqsJEf33tBhGf2h11_puR2RPU'
+                GOOGLE_SAFE_BROWSING_API_KEY: '480be386-87f4-4e1b-bec7-f6d91034c387'
             }, () => {
                 console.log('API Key stored securely.');
             });
