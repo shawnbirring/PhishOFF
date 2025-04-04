@@ -18,6 +18,12 @@
         "./*"
       ]
     },
+    "module": "CommonJS",
+    "jsx": "react-jsx",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "verbatimModuleSyntax": false,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "esModuleInterop": true,
