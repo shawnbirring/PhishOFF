@@ -57,4 +57,20 @@ export class BrandImpersonationCheck implements SafetyCheck {
             };
         }
     }
+
+    getRecommendation(result: CheckResult): string | null {
+        if (result.type === "safe") return null;
+        
+        return "This site may be impersonating a legitimate brand. Double-check the URL carefully and consider visiting the official site directly.";
+    }
+
+    getDetailedExplanation(result: CheckResult, url?: string): string | null {
+        if (result.type === "safe") return null;
+        
+        return `This URL appears to be attempting to impersonate a known brand or service. Phishing attacks often create websites that look identical to legitimate services but have slightly different URLs.
+
+The system detected similarities to known brand names in the domain, which is a common phishing tactic. Attackers may use techniques like typosquatting (e.g., "amaz0n.com" instead of "amazon.com"), adding extra words (e.g., "paypal-secure.com"), or using different top-level domains (e.g., ".org" instead of ".com").
+
+Always verify the exact spelling of domains for sensitive websites like banking, shopping, or email services. When in doubt, manually type the URL or use a bookmark rather than clicking links.`;
+    }
 } 

@@ -71,4 +71,46 @@ export class DatabaseCheck implements SafetyCheck {
             };
         }
     }
+
+    getRecommendation(result: CheckResult): string | null {
+        if (result.type === "safe") return null;
+        
+        if (result.message.includes("Error contacting database")) {
+            return "Unable to connect to our security database. This is likely a temporary issue with our service, not a problem with the website.";
+        } else if (result.message.includes("Failed to check database")) {
+            return "Our security database service is experiencing issues. This does not necessarily mean the site is unsafe.";
+        } else if (result.message.includes("marked as malicious")) {
+            return "This URL has been previously identified as malicious in our database. Avoid accessing this site.";
+        }
+        
+        return "This check was inconclusive. Consider using other security indicators to evaluate this site.";
+    }
+
+    getDetailedExplanation(result: CheckResult, url?: string): string | null {
+        if (result.type === "safe") return null;
+        
+        if (result.message.includes("marked as malicious")) {
+            return `This URL was found in our database of known malicious websites. Our database compiles information from multiple security sources and previous scans to identify dangerous websites.
+
+This URL has been previously identified as malicious, likely for one of these reasons:
+- Hosting phishing pages that steal user information
+- Distributing malware or unwanted software
+- Engaging in scam activities
+- Being part of a botnet or command-and-control infrastructure
+
+The presence of this URL in our malicious database is a strong indicator of risk, as it has been verified as harmful by our systems.`;
+        } else if (result.message.includes("Error contacting database")) {
+            return `Our system was unable to check this URL against our security database. This is most likely due to temporary technical issues with our database service rather than a problem with the URL itself.
+
+The database check is one of several security checks we perform. While this specific check couldn't be completed, the overall safety assessment is based on multiple other checks that were successful.`;
+        } else if (result.message.includes("Failed to check database")) {
+            return `We encountered an error while checking this URL against our security database. The specific database operation failed, which is typically due to internal service issues rather than properties of the URL itself.
+
+This is a technical limitation of our current checking process and doesn't necessarily indicate anything about the safety of the URL. Other security checks were still performed and contribute to the overall assessment.`;
+        }
+        
+        return `The database check for this URL was inconclusive. Our security database contains information about previously analyzed websites categorized as safe, suspicious, or malicious.
+
+This URL was either not previously analyzed or had conflicting information in our database. This doesn't necessarily indicate the site is unsafe, but means we don't have reliable historical data about its safety profile.`;
+    }
 }

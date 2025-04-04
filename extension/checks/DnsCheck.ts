@@ -82,4 +82,43 @@ export class DnsCheck implements SafetyCheck {
             return { ips: [], error: error.message };
         }
     }
+
+    getRecommendation(result: CheckResult): string | null {
+        if (result.type === "safe") return null;
+        
+        if (result.message.includes("Unable to perform")) {
+            return "Could not analyze the DNS resolution for this site. Consider using caution.";
+        } else if (result.message.includes("DNS resolution failed")) {
+            return "DNS resolution issues detected. The domain may be misconfigured or recently registered.";
+        }
+        
+        return "This site resolves to suspicious IP addresses, suggesting it may be part of a phishing campaign.";
+    }
+
+    getDetailedExplanation(result: CheckResult, url?: string): string | null {
+        if (result.type === "safe") return null;
+        
+        if (result.message.includes("suspicious IP range")) {
+            return `The Domain Name System (DNS) records for this website showed suspicious characteristics. DNS translates human-readable domain names into IP addresses that computers use to identify each other.
+
+This site resolves to IP addresses in private or reserved ranges, which is highly unusual for legitimate public websites. Private IP ranges (like 192.168.x.x, 10.x.x.x, or 172.16-31.x.x) are meant for internal networks, not public websites.
+
+This could indicate:
+- An attempt to redirect users to internal network resources (potential security attack)
+- DNS poisoning or other manipulation of DNS records
+- A misconfiguration, though this is rare for production websites
+
+These characteristics are strongly associated with malicious activity and potential security risks.`;
+        } else {
+            return `The Domain Name System (DNS) records for this website showed suspicious characteristics. DNS translates human-readable domain names into IP addresses that computers use to identify each other.
+
+Our check found one or more of these issues:
+- The domain may have unusual DNS configuration
+- The domain might be newly registered, which is common for phishing sites
+- There may be mismatches between the domain's registration information and its DNS configuration
+- The DNS resolution process encountered errors or inconsistencies
+
+These characteristics can sometimes indicate higher risk of malicious activity, though they can also appear with legitimate but poorly configured websites.`;
+        }
+    }
 } 

@@ -30,4 +30,23 @@ export class EncodingCheck implements SafetyCheck {
             type: isSuspicious ? "malicious" : "safe"
         };
     }
+
+    getRecommendation(result: CheckResult): string | null {
+        if (result.type === "safe") return null;
+        return "Unusual encoding in this URL could be hiding malicious content. Exercise caution.";
+    }
+
+    getDetailedExplanation(result: CheckResult, url?: string): string | null {
+        if (result.type === "safe") return null;
+        
+        return `This URL contains suspicious encoding patterns that are frequently used to disguise malicious URLs. Encoding converts characters into a format that can be transmitted over the Internet but can also be used to hide the true destination of a link.
+
+Suspicious encoding patterns include:
+- Excessive use of percent-encoding (e.g., %20, %3D) when not necessary
+- Double-encoding (encoding already encoded characters)
+- Encoding alphabetic characters that don't need to be encoded
+- Using hexadecimal or other representations to obscure the actual URL
+
+These techniques are often used to bypass security filters or to trick users about the actual destination of a link.`;
+    }
 } 

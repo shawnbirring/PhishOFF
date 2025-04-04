@@ -40,4 +40,20 @@ export class HttpsCheck implements SafetyCheck {
             };
         }
     }
+
+    getRecommendation(result: CheckResult): string | null {
+        if (result.type === "safe") return null;
+        
+        return "This site does not use secure HTTPS. Avoid entering sensitive information like passwords or credit card details.";
+    }
+
+    getDetailedExplanation(result: CheckResult, url: string): string | null {
+        if (result.type === "safe") return null;
+        
+        return `HTTPS (Hypertext Transfer Protocol Secure) is the secure version of HTTP, the protocol over which data is sent between your browser and the website. HTTPS ensures that all communications between your browser and the website are encrypted.
+
+This website is using HTTP instead of HTTPS. Without encryption, attackers can potentially intercept data transmitted between you and the website, including passwords, credit card numbers, or other sensitive information. This is especially risky when connected to public Wi-Fi networks.
+
+Modern secure websites should always use HTTPS to protect user data. Major browsers like Chrome now mark HTTP sites as "Not Secure" in the address bar.`;
+    }
 }

@@ -242,4 +242,85 @@ export class CertificateCheck implements SafetyCheck {
         
         return issues;
     }
+
+    getRecommendation(result: CheckResult): string | null {
+        if (result.type === "safe") return null;
+        
+        if (result.message.includes("Unable to verify")) {
+            return "Could not validate the security certificate for this site. Consider using caution.";
+        } else if (result.message.includes("Site does not use HTTPS")) {
+            return "This site does not use HTTPS. Avoid entering sensitive information like passwords or credit card details.";
+        } else if (result.message.includes("Certificate has expired")) {
+            return "This site's security certificate has expired. This could indicate the site is abandoned or poorly maintained, increasing security risk.";
+        } else if (result.message.includes("Certificate expires soon")) {
+            return "This site's security certificate is about to expire. While not immediately dangerous, it shows poor maintenance.";
+        } else if (result.message.includes("trust issues")) {
+            return "This site uses a certificate that isn't fully trusted. This could indicate a man-in-the-middle attack or improper configuration.";
+        } else if (result.message.includes("Poor SSL rating")) {
+            return "This site's SSL configuration is weak and vulnerable to known attacks. Your connection may not be secure.";
+        }
+        
+        return "There are issues with this site's security certificate. Your connection may not be secure.";
+    }
+
+    getDetailedExplanation(result: CheckResult, url?: string): string | null {
+        if (result.type === "safe") return null;
+        
+        if (result.message.includes("Site does not use HTTPS")) {
+            return `This website does not use HTTPS, which is required for secure certificates. HTTPS (Hypertext Transfer Protocol Secure) is essential for encrypting communication between your browser and websites.
+
+Without HTTPS:
+- All data is transmitted in plain text and can be intercepted
+- There is no verification of the website's true identity
+- Modern browsers will mark the site as "Not Secure"
+
+Most legitimate websites now use HTTPS by default, especially those handling any form of user data or login information.`;
+        } else if (result.message.includes("Certificate has expired")) {
+            return `This website's SSL/TLS certificate has expired. Every secure website uses a certificate to prove its identity and establish encrypted connections. Certificates have expiration dates (typically 1-2 years) after which they must be renewed.
+
+An expired certificate indicates one of several issues:
+- The site owner has neglected basic security maintenance
+- The site may be abandoned but still accessible
+- In some cases, attackers may use copies of legitimate but expired certificates
+
+Browsers display warnings about expired certificates because they can no longer verify if the connection is secure and authentic. You should never proceed to sites with expired certificates if they handle sensitive information.`;
+        } else if (result.message.includes("Certificate expires soon")) {
+            return `This website's SSL/TLS certificate is about to expire soon. While the certificate is still valid right now, it will become invalid in the near future.
+
+Website owners typically receive multiple reminders to renew their certificates before expiration. Failure to plan for renewal suggests possible neglect of security practices. While not immediately dangerous, it indicates the site may not be following security best practices.`;
+        } else if (result.message.includes("trust issues")) {
+            return `This website's SSL/TLS certificate has trust issues. For a certificate to be trusted, it must be issued by a Certificate Authority (CA) that browsers recognize and trust.
+
+The certificate for this site has one or more of the following problems:
+- It's self-signed (created by the website owner, not a trusted CA)
+- It was issued by an untrusted Certificate Authority
+- The certificate chain is incomplete or invalid
+- The certificate doesn't match the domain name you're visiting
+
+These issues could indicate a potential "man-in-the-middle" attack where an attacker intercepts your connection, or simply poor security configuration by the site owner.`;
+        } else if (result.message.includes("Poor SSL rating")) {
+            return `This website has a poor SSL/TLS security configuration. Beyond just having a valid certificate, websites need to configure their secure connections properly.
+
+This site has security weaknesses such as:
+- Using outdated, vulnerable encryption protocols (like SSLv3, TLS 1.0 or 1.1)
+- Supporting weak cipher suites that could be cracked
+- Vulnerability to known attacks like POODLE, BEAST, or Heartbleed
+- Missing important security headers or using insecure settings
+
+These weaknesses mean that while the connection appears secure, it may be vulnerable to sophisticated attacks that could compromise encrypted data.`;
+        } else if (result.message.includes("Unable to verify")) {
+            return `We could not complete a thorough verification of this website's security certificate. This does not necessarily mean the site is unsafe, but we couldn't confirm it meets current security standards.
+
+Possible reasons for this include:
+- Limited access to certificate verification services
+- Network connectivity issues when checking the certificate
+- The site using an unusual certificate configuration
+
+When certificate checks cannot be completed, it's best to exercise caution, especially before entering sensitive information.`;
+        }
+        
+        return `This website has certificate security issues. SSL/TLS certificates are fundamental to secure web browsing, establishing both encryption and authentication of the site's identity.
+
+The specific certificate issue detected could allow an attacker to potentially intercept or modify data you send to or receive from this website, even though the connection appears secure.`;
+    }
 } 
