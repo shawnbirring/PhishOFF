@@ -1,6 +1,9 @@
 name: Test Plasmo Extension
-
 on:
+  push:
+     branches:
+       - QA-Extension-Testing 
+       
   pull_request:
     branches:
       - main
