@@ -111,7 +111,7 @@ export async function startSafetyCheck(request: NavigationRequest): Promise<void
   try {
     console.log(`[PhishOFF] Starting safety check for: ${request.url}`);
     
-    const result = await checkWebsite(request.url);
+    const result = await checkWebsite(request.url, request.tabId);
     console.log(`[PhishOFF] Check result:`, result);
     
     const checkState = pendingChecks.get(request.tabId);
