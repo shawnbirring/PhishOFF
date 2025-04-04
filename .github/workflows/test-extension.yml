@@ -33,9 +33,6 @@ jobs:
         env:
           PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
           PARCEL_WORKER_BACKEND: process
-
-      - name: Install Jest and Required Packages
-        run: cd extension && npm install --save-dev jest ts-jest @types/jest jest-environment-jsdom
       
       - name: Run Tests  
         run: cd extension && npm test -- --ci --coverage
