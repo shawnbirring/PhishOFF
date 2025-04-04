@@ -118,6 +118,7 @@ body {
     font-weight: 600;
     margin: 1rem 0;
     text-align: center;
+    width: 100%;
   }
   
   .message {
@@ -300,10 +301,74 @@ body {
   /* Loading states */
   .loading {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem;
     color: #6c7589;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .loading img {
+    display: block;
+    max-width: 120px;
+    margin: 0 auto;
+    object-fit: contain;
+  }
+  
+  /* Check phase indicator */
+  .check-phase {
+    margin-top: 0.8rem;
+    color: #6c7589;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .check-phase span {
+    display: block;
+    width: 100%;
+    text-align: center;
+    line-height: 1.4;
+  }
+  
+  /* Animated dots */
+  .phase-dots {
+    display: flex;
+    margin-top: 0.5rem;
+    justify-content: center;
+  }
+  
+  .phase-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #3c6cf0;
+    margin: 0 4px;
+    animation: phaseDot 1.5s infinite ease-in-out;
+  }
+  
+  .phase-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  
+  .phase-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  
+  @keyframes phaseDot {
+    0%, 60%, 100% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    30% {
+      transform: scale(1.5);
+      opacity: 1;
+    }
   }
   
   /* Utilities */
@@ -366,4 +431,61 @@ body {
     50% {
       opacity: 0.5;
     }
+  }
+  
+  /* Styling for details/summary elements */
+  details {
+    transition: all 0.3s;
+  }
+  
+  details summary {
+    position: relative;
+    padding: 0.3rem 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+  }
+  
+  details summary::after {
+    content: "↓";
+    position: relative;
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+  }
+  
+  details[open] summary::after {
+    transform: rotate(180deg);
+  }
+  
+  details summary::-webkit-details-marker {
+    display: none;
+  }
+  
+  /* Learn More button */
+  .learn-more-btn {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #3c6cf0;
+    background-color: #f0f5ff;
+    border: 1px solid #d9e2fd;
+    border-radius: 4px;
+    padding: 0.4rem 0.8rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+  
+  .learn-more-btn:hover {
+    background-color: #e0ebff;
+    color: #2a5bd7;
+    border-color: #b9c9fa;
+  }
+  
+  .learn-more-btn svg {
+    margin-right: 0.35rem;
+    width: 1rem;
+    height: 1rem;
   }
