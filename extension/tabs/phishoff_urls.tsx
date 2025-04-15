@@ -1,3 +1,11 @@
+/**
+ * phishoff_urls.tsx - URL database management page for PhishOFF extension
+ * 
+ * Displays and manages the database of previously checked URLs, allowing
+ * users to view safety status, filtering options, and access detailed
+ * analysis for specific URLs.
+ */
+
 import { useState, useEffect } from "react"
 import "../styles/phishoff.css"
 
@@ -9,6 +17,10 @@ interface UrlEntry {
   __v?: number;
 }
 
+/**
+ * PhishoffUrls component
+ * Manages the display and interaction with the URL database
+ */
 function PhishoffUrls() {
   const [urls, setUrls] = useState<UrlEntry[]>([]);
   const [filter, setFilter] = useState<"all" | "safe" | "malicious" | "unknown">("all");
@@ -39,6 +51,12 @@ function PhishoffUrls() {
     fetchUrls();
   }, []);
   
+  const handleViewDetailedAnalysis = (url: string) => {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL("tabs/analysis.html") + "?url=" + encodeURIComponent(url)
+    });
+  };
+
   // Filter logic
   const filteredUrls = filter === "all" ? 
     urls : 
@@ -109,6 +127,7 @@ function PhishoffUrls() {
                   <th>URL</th>
                   <th>Status</th>
                   <th>Last Checked</th>
+                  <th>Analysis</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,6 +149,15 @@ function PhishoffUrls() {
                     </td>
                     <td style={{color: '#6c7589'}}>
                       {formatDate(urlObj.lastChecked)}
+                    </td>
+                    <td>
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={() => handleViewDetailedAnalysis(urlObj.url)}
+                        style={{ backgroundColor: '#3c6cf0', color: '#fff', padding: '0.5rem 1rem', borderRadius: '4px' }}
+                      >
+                        View Analysis
+                      </button>
                     </td>
                   </tr>
                 ))}

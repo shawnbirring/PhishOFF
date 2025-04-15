@@ -1,4 +1,17 @@
-import { getApiKey } from '../utils/config';
+/**
+ * website_check.ts - Website security verification system
+ * 
+ * Handles the URL safety checking process by coordinating multiple
+ * security checks and providing phased updates to the UI. Manages
+ * the database lookups, fast checks, and advanced security scans.
+ */
+
+import { VirusTotalCheck } from '../checks/VirusTotalCheck';
+import { HttpsCheck } from '../checks/HttpsCheck';
+import { EntropyCheck } from '../checks/EntropyCheck';
+import { EncodingCheck } from '../checks/EncodingCheck';
+import { BrandImpersonationCheck } from '../checks/BrandImpersonationCheck';
+import type { SafetyCheck, CheckResult } from '../checks/types';
 
 export interface ScanResult {
     isSafe: boolean;
@@ -14,12 +27,35 @@ export interface ScanResult {
 // API endpoint for our MongoDB service
 const API_URL = "http://localhost:3000";
 
+// Define our fast checks (no network required)
+const fastChecks: SafetyCheck[] = [
+    new HttpsCheck(),
+    new EntropyCheck(),
+    new EncodingCheck(),
+    new BrandImpersonationCheck()
+];
+
 /**
- * Main function to check website security using database first, then VirusTotal API
- * @param url URL to check
+ * Updates the check phase information in the UI
+ * 
+ * @param tabId - Tab ID to send the update to
+ * @param phase - Current check phase description
+ */
+function updateCheckPhase(tabId: number, phase: string): void {
+    chrome.tabs.sendMessage(tabId, {
+        action: 'checkPhaseUpdate',
+        phase
+    });
+}
+
+/**
+ * Main function to check website security
+ * 
+ * @param url - URL to check
+ * @param tabId - Tab ID for sending progress updates
  * @returns Promise resolving to scan results
  */
-export async function checkWebsite(url: string): Promise<ScanResult> {
+export async function checkWebsite(url: string, tabId?: number): Promise<ScanResult> {
     console.log('[PhishOFF] Starting security check for:', url);
 
     if (!url) {
@@ -28,6 +64,7 @@ export async function checkWebsite(url: string): Promise<ScanResult> {
     }
 
     try {
+        // Validate URL
         const urlToCheck = sanitizeUrl(url);
         console.log('[PhishOFF] Sanitized URL:', urlToCheck);
 
@@ -36,10 +73,12 @@ export async function checkWebsite(url: string): Promise<ScanResult> {
             return { isSafe: false, message: "Invalid URL format" };
         }
 
-        // First check if URL exists in our database
+        // Step 1: Check if URL exists in our database first
+        if (tabId) updateCheckPhase(tabId, "Checking database for known threats...");
+        
         const dbResult = await checkUrlInDatabase(urlToCheck);
         
-        // If found in database with definitive status, return that result
+        // If found in database with definitive status, return that result immediately
         if (dbResult && dbResult.status !== 'unknown') {
             console.log('[PhishOFF] URL found in database:', dbResult);
             
@@ -58,23 +97,54 @@ export async function checkWebsite(url: string): Promise<ScanResult> {
             };
         }
         
-        // If not found or status is unknown, continue with VirusTotal check
+        // Step 2: Perform fast local checks
+        if (tabId) updateCheckPhase(tabId, "Running non-network security checks...");
+        
+        let failedFastChecks = 0;
+        
+        for (const check of fastChecks) {
+            const result = await check.check(urlToCheck);
+            if (result.type === 'malicious') {
+                failedFastChecks++;
+                
+                // If multiple fast checks fail, mark as unsafe immediately
+                if (failedFastChecks >= 2) {
+                    return {
+                        isSafe: false,
+                        message: `Multiple security checks failed: ${result.message}`,
+                        details: {
+                            harmless: 0,
+                            malicious: failedFastChecks,
+                            suspicious: 0,
+                            undetected: fastChecks.length - failedFastChecks
+                        }
+                    };
+                }
+            }
+        }
+        
+        // Step 3: If not found in database and passed fast checks, continue with VirusTotal
+        if (tabId) updateCheckPhase(tabId, "Performing API security checks...");
         console.log('[PhishOFF] URL not found in database or status unknown, checking VirusTotal...');
         
-        const apiKey = await getApiKey();
-        console.log('[PhishOFF] Got API key, submitting scan...');
-
-        const scanId = await submitUrlForScan(urlToCheck, apiKey);
-
-        if (!scanId) {
-            console.error('[PhishOFF] Failed to get scan ID');
-            return { isSafe: false, message: "Failed to scan URL" };
-        }
-
-        console.log('[PhishOFF] Got scan ID:', scanId);
-        const scanResult = await pollResults(scanId, apiKey);
+        // Use the VirusTotalCheck class for checking
+        const virusTotalChecker = new VirusTotalCheck();
+        const checkResult = await virusTotalChecker.check(urlToCheck);
         
-        // Save result to our database for future reference
+        // Convert CheckResult to ScanResult format
+        const scanResult: ScanResult = {
+            isSafe: checkResult.type === 'safe',
+            message: checkResult.message,
+            details: {
+                harmless: checkResult.type === 'safe' ? 1 : 0,
+                malicious: checkResult.type === 'malicious' ? 1 : 0,
+                suspicious: 0,
+                undetected: 0
+            }
+        };
+        
+        // Step 4: Save result to database for future reference
+        if (tabId) updateCheckPhase(tabId, "Analysis complete! Saving results...");
         await saveUrlToDatabase(urlToCheck, scanResult.isSafe ? 'safe' : 'malicious');
         
         return scanResult;
@@ -86,7 +156,8 @@ export async function checkWebsite(url: string): Promise<ScanResult> {
 
 /**
  * Checks if URL exists in our database
- * @param url URL to check
+ * 
+ * @param url - URL to check
  * @returns URL status from database or null if not found
  */
 async function checkUrlInDatabase(url: string): Promise<{ status: string } | null> {
@@ -113,9 +184,10 @@ async function checkUrlInDatabase(url: string): Promise<{ status: string } | nul
 }
 
 /**
- * Saves URL and its status to our database
- * @param url URL to save
- * @param status Safety status (safe/malicious/unknown)
+ * Saves URL and its status to the database
+ * 
+ * @param url - URL to save
+ * @param status - Safety status (safe/malicious/unknown)
  */
 async function saveUrlToDatabase(url: string, status: string): Promise<void> {
     try {
@@ -139,7 +211,8 @@ async function saveUrlToDatabase(url: string, status: string): Promise<void> {
 
 /**
  * Sanitizes and validates URL format
- * @param url Raw URL input
+ * 
+ * @param url - Raw URL input
  * @returns Sanitized URL or null if invalid
  */
 function sanitizeUrl(url: string): string | null {

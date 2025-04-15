@@ -1,11 +1,25 @@
+/**
+ * checking.tsx - Checking page UI for PhishOFF extension
+ * 
+ * This component displays the URL safety checking process to the user,
+ * shows real-time updates during scanning, and provides appropriate
+ * actions based on the safety verdict (safe, unsafe, or unknown).
+ */
+
 import { useState, useEffect, useRef } from "react"
 import type { ScanResult } from "../background/website_check"
 import "../styles/phishoff.css"
+import loadingGif from "url:../assets/LoadingRod.gif"
 
+/**
+ * CheckingPage component
+ * Handles the display of the URL checking process, results, and user actions
+ */
 const CheckingPage = () => {
   const [url, setUrl] = useState<string>("")
   const [status, setStatus] = useState<"checking" | "safe" | "unsafe">("checking")
   const [result, setResult] = useState<ScanResult | null>(null)
+  const [checkPhase, setCheckPhase] = useState<string>("Initializing...")
   const listenerInitialized = useRef(false)
   const originalUrlRef = useRef<string>("")
   
@@ -29,6 +43,12 @@ const CheckingPage = () => {
       
       chrome.runtime.onMessage.addListener((message) => {
         console.log("[PhishOFF] Checking page received message:", message);
+        
+        // Handle check phase updates
+        if (message.action === "checkPhaseUpdate") {
+          setCheckPhase(message.phase);
+          return;
+        }
         
         if (message.action === "checkResult") {
           setResult(message.result)
@@ -61,6 +81,12 @@ const CheckingPage = () => {
     }
   }, [])
   
+  const handleViewDetailedAnalysis = (url: string) => {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL("tabs/analysis.html") + "?url=" + encodeURIComponent(url)
+    });
+  };
+  
   // Handle user choosing to proceed to unsafe site
   const handleProceedAnyway = () => {
     chrome.runtime.sendMessage({
@@ -77,13 +103,30 @@ const CheckingPage = () => {
         </div>
         
         {status === "checking" && (
-          <div>
-            <div className="status-icon checking">
-              <div className="spinner"></div>
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="status-icon checking">
+                <img 
+                  src={loadingGif}
+                  alt="Loading" 
+                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                />
+              </div>
             </div>
-            <h2 className="heading">Checking Website Safety...</h2>
-            <div className="url-display">
+            
+            <h2 className="heading mb-3">Checking Website Safety...</h2>
+            
+            <div className="url-display mb-4">
               <span>{url}</span>
+            </div>
+            
+            <div className="check-phase">
+              <span>{checkPhase}</span>
+              <div className="phase-dots mt-2">
+                <span className="phase-dot"></span>
+                <span className="phase-dot"></span>
+                <span className="phase-dot"></span>
+              </div>
             </div>
           </div>
         )}
@@ -165,6 +208,13 @@ const CheckingPage = () => {
                   className="btn btn-danger"
                 >
                   Proceed anyway (not recommended)
+                </button>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => handleViewDetailedAnalysis(originalUrlRef.current || url)}
+                  style={{ backgroundColor: '#3c6cf0', color: '#fff', padding: '0.5rem 1rem', borderRadius: '4px', marginLeft: '0.5rem' }}
+                >
+                  View Detailed Analysis
                 </button>
               </div>
             </div>

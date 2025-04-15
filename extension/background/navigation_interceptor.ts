@@ -1,3 +1,11 @@
+/**
+ * navigation_interceptor.ts - Intercepts navigation requests for security checking
+ * 
+ * Monitors browser navigation events and redirects to the checking page
+ * when users navigate to external sites. Manages the security checking
+ * process and communication with UI components.
+ */
+
 import { checkWebsite } from './website_check';
 
 export interface NavigationRequest {
@@ -31,7 +39,7 @@ function getHostname(url: string): string {
 }
 
 /**
- * Marks a site as safe in the cache
+ * Marks a site as safe in the cache to prevent repeated checks
  */
 export function markSiteAsSafe(url: string): void {
   const hostname = getHostname(url);
@@ -111,7 +119,7 @@ export async function startSafetyCheck(request: NavigationRequest): Promise<void
   try {
     console.log(`[PhishOFF] Starting safety check for: ${request.url}`);
     
-    const result = await checkWebsite(request.url);
+    const result = await checkWebsite(request.url, request.tabId);
     console.log(`[PhishOFF] Check result:`, result);
     
     const checkState = pendingChecks.get(request.tabId);
@@ -136,7 +144,7 @@ export async function startSafetyCheck(request: NavigationRequest): Promise<void
 }
 
 /**
- * Try to send the result to the checking page
+ * Tries to send the result to the checking page
  * The result will be stored if the page isn't ready yet
  */
 function trySendResultToCheckingPage(tabId: number, result: any, originalUrl: string): void {

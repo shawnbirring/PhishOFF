@@ -14,7 +14,11 @@
       "background": {
         "service_worker": "background/index.js",
         "type": "module"
-      }
+      },
+      "web_accessible_resources": [{
+        "resources": ["tabs/analysis.html"],
+        "matches": ["<all_urls>"]
+      }]
     }
   },
  "displayName": "Phish off",
@@ -22,7 +26,7 @@
   "description": "Protect against hackers!",
   "author": "Plasmo Corp. <foss@plasmo.com>",
   "scripts": {
-    "dev": "plasmo dev",
+    "dev": "plasmo dev",  
     "build": "cross-env PARCEL_WORKER_BACKEND=process plasmo build --target=chrome-mv3",
     "package": "plasmo package",
     "test": "jest"

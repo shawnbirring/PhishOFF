@@ -1,3 +1,11 @@
+/**
+ * index.ts - Main background service worker for the PhishOFF extension
+ * 
+ * Initializes the extension's background processes and sets up message
+ * handlers for communication between UI components and background services.
+ * Manages navigation interception and URL safety checking.
+ */
+
 import { checkWebsite } from './website_check';
 import { interceptNavigation, startSafetyCheck } from './navigation_interceptor';
 
@@ -35,6 +43,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Open the URLs list page in a new tab
       chrome.tabs.create({
         url: chrome.runtime.getURL("tabs/phishoff_urls.html")
+      });
+      return false;
+    }
+
+    if (message.action === "openAnalysisPage") {
+      // Open the URL analysis page in a new tab
+      chrome.tabs.create({
+        url: chrome.runtime.getURL(`tabs/analysis.html?url=${encodeURIComponent(message.url)}`)
       });
       return false;
     }
