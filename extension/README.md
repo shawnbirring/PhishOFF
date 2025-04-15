@@ -14,8 +14,9 @@ A plasmo extension with two main features: Ensuring the url you are visiting is 
    Create a `.env` file:
 
    ```
-    PLASMO_PUBLIC_VIRUSTOTAL_API_KEY=
-    API_URL=
+    PLASMO_PUBLIC_VIRUSTOTAL_API_KEY
+    API_URL
+    GOOGLE_SAFE_BROWSING_API_KEY
    ```
 
 3. **Run the Extension**:
