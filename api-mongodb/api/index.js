@@ -3,6 +3,8 @@ const Redis = require("ioredis");
 const mongoose = require("mongoose");
 const compression = require("compression");
 
+require("dotenv").config();
+
 const app = express();
 
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
@@ -135,8 +137,36 @@ app.get("/urls", async (req, res) => {
   res.json(urls);
 });
 
-// Start server
-app.listen(3000, () => console.log(`Server running on port ${3000}`));
+// Handle test run
+const isTestRun = process.argv.includes("--test-run");
+
+if (isTestRun) {
+  const server = app.listen(3000, async () => {
+    console.log("Test run: Server started on port 3000");
+    // Close the server
+    server.close(async () => {
+      console.log("Test run: Server stopped");
+      try {
+        // Close MongoDB connection (Promise-based)
+        await mongoose.connection.close();
+        console.log("Test run: MongoDB connection closed");
+
+        // Close Redis connection (Promise-based)
+        await redis.quit();
+        console.log("Test run: Redis connection closed");
+
+        // Exit cleanly
+        process.exit(0);
+      } catch (err) {
+        console.error("Error during test run shutdown:", err);
+        process.exit(1);
+      }
+    });
+  });
+} else {
+  // Normal server start
+  app.listen(3000, () => console.log(`Server running on port ${3000}`));
+}
 
 // Hosting
 module.exports = app;

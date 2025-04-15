@@ -1,0 +1,35 @@
+name: Test Plasmo Extension
+
+on:
+  pull_request:
+    branches:
+      - main
+      - 14-QA-Build-Testing
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20  # Ensure Node.js v20 is being used
+
+      - name: Install Dependencies
+        run: cd extension && rm -rf node_modules package-lock.json && npm install --legacy-peer-deps
+
+      - name: Check Environment Variables
+        run: echo $PLASMO_PUBLIC_VIRUSTOTAL_API_KEY
+        
+      - name: Run Plasmo Build with Increased Memory and Verbose Logging
+        run: cd extension && export PARCEL_WORKER_BACKEND=process && npm run build
+        env:
+          PLASMO_PUBLIC_VIRUSTOTAL_API_KEY: ${{ secrets.PLASMO_PUBLIC_VIRUSTOTAL_API_KEY }}
+          PARCEL_WORKER_BACKEND: process
+          
+     
+

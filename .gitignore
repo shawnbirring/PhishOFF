@@ -1,2 +1,3 @@
 api-supabase/bun.lock
 extension/bun.lock
+/machinelearning/model*

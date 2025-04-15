@@ -4,7 +4,7 @@
   "description": "A simple Express API for checking and managing URL safety statuses, built for a phishing Chrome extension. Uses Redis for caching and MongoDB for storage.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node api/index.js --test-run",
     "start": "node api/index.js"
   },
   "keywords": [],
@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "compression": "^1.8.0",
+    "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "ioredis": "^5.6.0",
     "mongoose": "^8.12.1",
