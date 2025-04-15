@@ -3,6 +3,8 @@ const Redis = require("ioredis");
 const mongoose = require("mongoose");
 const compression = require("compression");
 
+require("dotenv").config();
+
 const app = express();
 
 const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
