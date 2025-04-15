@@ -1,3 +1,11 @@
+/**
+ * index.ts - Main background service worker for the PhishOFF extension
+ * 
+ * Initializes the extension's background processes and sets up message
+ * handlers for communication between UI components and background services.
+ * Manages navigation interception and URL safety checking.
+ */
+
 import { checkWebsite } from './website_check';
 import { interceptNavigation, startSafetyCheck } from './navigation_interceptor';
 

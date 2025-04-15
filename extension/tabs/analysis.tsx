@@ -3,6 +3,11 @@ import "../styles/phishoff.css";
 import { analyzeUrl, type AnalysisSummary } from "../checks/analyzer";
 import loadingGif from "url:../assets/LoadingRod.gif";
 
+/**
+ * AnalysisPage component 
+ * Displays detailed security analysis results for a URL, including
+ * individual check results, recommendations, and safety score
+ */
 function AnalysisPage() {
   const [analysis, setAnalysis] = useState<AnalysisSummary | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,10 @@
 import { type SafetyCheck, type CheckResult } from "./types";
 
+/**
+ * BrandImpersonationCheck detects attempts to impersonate well-known brands
+ * through URL manipulation and typosquatting (like "g00gle" instead of "google")
+ * These are common tactics in phishing and fraudulent websites
+ */
 export class BrandImpersonationCheck implements SafetyCheck {
     private readonly commonBrands = [
         { real: "google", fake: /g[o0]{2,}gle|go{2,}gle|goog[l1]e/i },

@@ -90,6 +90,11 @@ async function pollResults(id: string, apiKey: string): Promise<ScanResult> {
     };
 }
 
+/**
+ * VirusTotalCheck integrates with the VirusTotal API to check URLs
+ * Against 70+ security services and antivirus engines to identify
+ * known malicious websites or domains with poor reputation
+ */
 export class VirusTotalCheck implements SafetyCheck {
     getName(): string {
         return "VirusTotal Check";

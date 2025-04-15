@@ -1,3 +1,4 @@
+
 import { type SafetyCheck, type CheckResult } from "./types";
 import { HttpsCheck } from "./HttpsCheck";
 import { DatabaseCheck } from "./DatabaseCheck";
@@ -10,6 +11,13 @@ import { CertificateCheck } from "./CertificateCheck";
 import { VirusTotalCheck } from "./VirusTotalCheck";
 import { getApiUrl } from "../utils/config";
 
+/**
+ * analyzer.ts - Core analysis engine for PhishOFF security checks
+ * 
+ * This file orchestrates all safety checks, collects results, and 
+ * calculates overall safety scores for analyzed URLs. It manages both
+ * fast checks (non-network) and deep checks (requiring network calls).
+ */
 export interface AnalysisSummary {
     url: string;
     results: CheckResult[];
@@ -49,6 +57,13 @@ const deepChecks: SafetyCheck[] = [
     new VirusTotalCheck()
 ];
 
+/**
+ * Analyzes a URL using security checks and produces a comprehensive analysis summary
+ * 
+ * @param url - The URL to analyze
+ * @param fastOnly - If true, only run fast checks (non-network dependent)
+ * @returns Analysis summary with detailed results, safety score, and recommendations
+ */
 export async function analyzeUrl(
     url: string,
     fastOnly: boolean = false
@@ -148,6 +163,12 @@ export async function analyzeUrl(
     };
 }
 
+/**
+ * Reports URL analysis results to the database for future reference
+ * 
+ * @param url - The URL that was analyzed 
+ * @param results - The check results to report
+ */
 async function reportUrlStatus(url: string, results: CheckResult[]): Promise<void> {
     try {
         // Use a direct reference to the API endpoint to ensure connectivity

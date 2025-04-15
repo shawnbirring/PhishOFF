@@ -1,8 +1,20 @@
+/**
+ * checking.tsx - Checking page UI for PhishOFF extension
+ * 
+ * This component displays the URL safety checking process to the user,
+ * shows real-time updates during scanning, and provides appropriate
+ * actions based on the safety verdict (safe, unsafe, or unknown).
+ */
+
 import { useState, useEffect, useRef } from "react"
 import type { ScanResult } from "../background/website_check"
 import "../styles/phishoff.css"
 import loadingGif from "url:../assets/LoadingRod.gif"
 
+/**
+ * CheckingPage component
+ * Handles the display of the URL checking process, results, and user actions
+ */
 const CheckingPage = () => {
   const [url, setUrl] = useState<string>("")
   const [status, setStatus] = useState<"checking" | "safe" | "unsafe">("checking")

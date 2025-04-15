@@ -1,22 +1,32 @@
 import { type SafetyCheck, type CheckResult } from "./types";
 
+/**
+ * EntropyCheck examines the randomness (entropy) of characters in a URL
+ * High entropy URLs often contain random-looking strings that are commonly 
+ * associated with malicious sites, malware, or phishing attempts
+ */
 export class EntropyCheck implements SafetyCheck {
+    // Returns the display name for this check
     getName(): string {
         return "Entropy Analysis";
     }
 
+    // Returns a description of what this check does
     getDescription(): string {
         return "Detects randomly generated or suspicious URLs based on character entropy";
     }
 
+    // Returns the weight of this check (1-100 scale)
     getWeight(): number {
         return 15;
     }
 
+    // Indicates this is a fast check that doesn't require network requests
     isFast(): boolean {
         return true;
     }
 
+    // Performs entropy calculation on the URL and determines if it's suspicious
     async check(url: string): Promise<CheckResult> {
         const entropy = this.calculateEntropy(url);
         const MAX_ENTROPY = 4.5;
@@ -30,6 +40,7 @@ export class EntropyCheck implements SafetyCheck {
         };
     }
 
+    // Calculates Shannon entropy for the input string
     private calculateEntropy(str: string): number {
         const len = str.length;
         const frequencies = new Map<string, number>();
@@ -44,12 +55,14 @@ export class EntropyCheck implements SafetyCheck {
         }, 0);
     }
     
+    // Returns user recommendation for suspicious entropy URLs
     getRecommendation(result: CheckResult): string | null {
         if (result.type === "safe") return null;
         
         return "This URL contains unusual random characters, which is often seen in malicious sites.";
     }
 
+    // Provides detailed explanation about entropy issues in URLs
     getDetailedExplanation(result: CheckResult, url: string): string | null {
         if (result.type === "safe") return null;
         

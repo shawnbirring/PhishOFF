@@ -1,3 +1,11 @@
+/**
+ * website_check.ts - Website security verification system
+ * 
+ * Handles the URL safety checking process by coordinating multiple
+ * security checks and providing phased updates to the UI. Manages
+ * the database lookups, fast checks, and advanced security scans.
+ */
+
 import { VirusTotalCheck } from '../checks/VirusTotalCheck';
 import { HttpsCheck } from '../checks/HttpsCheck';
 import { EntropyCheck } from '../checks/EntropyCheck';
@@ -28,9 +36,10 @@ const fastChecks: SafetyCheck[] = [
 ];
 
 /**
- * Sends a check phase update to the UI
- * @param tabId Tab ID to send the update to
- * @param phase Current check phase description
+ * Updates the check phase information in the UI
+ * 
+ * @param tabId - Tab ID to send the update to
+ * @param phase - Current check phase description
  */
 function updateCheckPhase(tabId: number, phase: string): void {
     chrome.tabs.sendMessage(tabId, {
@@ -40,9 +49,10 @@ function updateCheckPhase(tabId: number, phase: string): void {
 }
 
 /**
- * Main function to check website security using database first, then VirusTotal API
- * @param url URL to check
- * @param tabId Tab ID for sending progress updates
+ * Main function to check website security
+ * 
+ * @param url - URL to check
+ * @param tabId - Tab ID for sending progress updates
  * @returns Promise resolving to scan results
  */
 export async function checkWebsite(url: string, tabId?: number): Promise<ScanResult> {
@@ -146,7 +156,8 @@ export async function checkWebsite(url: string, tabId?: number): Promise<ScanRes
 
 /**
  * Checks if URL exists in our database
- * @param url URL to check
+ * 
+ * @param url - URL to check
  * @returns URL status from database or null if not found
  */
 async function checkUrlInDatabase(url: string): Promise<{ status: string } | null> {
@@ -173,9 +184,10 @@ async function checkUrlInDatabase(url: string): Promise<{ status: string } | nul
 }
 
 /**
- * Saves URL and its status to our database
- * @param url URL to save
- * @param status Safety status (safe/malicious/unknown)
+ * Saves URL and its status to the database
+ * 
+ * @param url - URL to save
+ * @param status - Safety status (safe/malicious/unknown)
  */
 async function saveUrlToDatabase(url: string, status: string): Promise<void> {
     try {
@@ -199,7 +211,8 @@ async function saveUrlToDatabase(url: string, status: string): Promise<void> {
 
 /**
  * Sanitizes and validates URL format
- * @param url Raw URL input
+ * 
+ * @param url - Raw URL input
  * @returns Sanitized URL or null if invalid
  */
 function sanitizeUrl(url: string): string | null {

@@ -1,3 +1,13 @@
+/**
+ * types.ts - Core type definitions for the PhishOFF security check system
+ * Contains interfaces that define the structure for check results and 
+ * the common interface implemented by all safety check classes.
+ */
+
+/**
+ * Represents the result of a security check operation
+ * @interface CheckResult
+ */
 export interface CheckResult {
     name: string;
     message: string;
@@ -5,6 +15,11 @@ export interface CheckResult {
     detailedExplanation?: string;
 }
 
+/**
+ * Common interface implemented by all safety check classes
+ * Defines the required methods for every check implementation
+ * @interface SafetyCheck
+ */
 export interface SafetyCheck {
     getName(): string;
     getDescription(): string;

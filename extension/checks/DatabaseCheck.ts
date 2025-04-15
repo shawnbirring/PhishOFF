@@ -1,6 +1,11 @@
 import { type SafetyCheck, type CheckResult } from "./types";
 import { getApiUrl } from "../utils/config";
 
+/**
+ * DatabaseCheck verifies if a URL is already known in the PhishOFF database
+ * Provides fast results based on previously analyzed websites, giving
+ * immediate classification for known safe or malicious sites
+ */
 export class DatabaseCheck implements SafetyCheck {
     getName(): string {
         return "Database Check";

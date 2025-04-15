@@ -1,5 +1,10 @@
 import { type SafetyCheck, type CheckResult } from "./types";
 
+/**
+ * CertificateCheck verifies SSL/TLS certificate validity and security
+ * Examines certificate issuer, expiration date, and other security
+ * attributes to identify potentially insecure or compromised sites
+ */
 export class CertificateCheck implements SafetyCheck {
     getName(): string {
         return "Certificate Validity Check";
@@ -76,7 +81,7 @@ export class CertificateCheck implements SafetyCheck {
         const baseUrl = 'https://api.ssllabs.com/api/v3';
         
         // Organization information for API access
-        const orgEmail = 'yaban@my.bcit.ca'; // Use your school/organization email
+        const orgEmail = ''; // Use your school/organization email
         
         // Check if we need to register first (should be done once, but included for completeness)
         await this.registerWithSSLLabs();
@@ -151,7 +156,7 @@ export class CertificateCheck implements SafetyCheck {
                 firstName: "PhishOFF",
                 lastName: "Extension",
                 organization: "BCIT Student Project",
-                email: "phishoff@schoolproject.edu" // Use your school/organization email
+                email: "" // Use your school/organization email
             };
             
             console.log('[CertificateCheck] Registering with SSL Labs API');

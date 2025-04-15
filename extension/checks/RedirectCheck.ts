@@ -1,5 +1,10 @@
 import { type SafetyCheck, type CheckResult } from "./types";
 
+/**
+ * RedirectCheck analyzes URL redirect chains for suspicious patterns
+ * Detects when URLs redirect through multiple domains or use unusual
+ * redirect patterns commonly seen in phishing or malicious websites
+ */
 export class RedirectCheck implements SafetyCheck {
     getName(): string {
         return "Redirect Chain Analysis";

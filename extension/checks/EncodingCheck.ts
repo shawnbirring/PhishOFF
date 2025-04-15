@@ -1,5 +1,10 @@
 import { type SafetyCheck, type CheckResult } from "./types";
 
+/**
+ * EncodingCheck identifies suspicious URL encoding patterns
+ * Examines percent-encoding and other URL encoding techniques that
+ * are frequently used to disguise malicious URLs or bypass filters
+ */
 export class EncodingCheck implements SafetyCheck {
     getName(): string {
         return "URL Encoding Analysis";

@@ -1,5 +1,10 @@
 import { type SafetyCheck, type CheckResult } from "./types";
 
+/**
+ * DnsCheck analyzes DNS resolution for suspicious patterns
+ * Detects when domains resolve to private IP ranges or have
+ * DNS issues that could indicate phishing or malicious activity
+ */
 export class DnsCheck implements SafetyCheck {
     private readonly privateIpRanges = [
         /^192\.168\./,

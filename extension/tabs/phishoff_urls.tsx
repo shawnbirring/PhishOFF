@@ -1,3 +1,11 @@
+/**
+ * phishoff_urls.tsx - URL database management page for PhishOFF extension
+ * 
+ * Displays and manages the database of previously checked URLs, allowing
+ * users to view safety status, filtering options, and access detailed
+ * analysis for specific URLs.
+ */
+
 import { useState, useEffect } from "react"
 import "../styles/phishoff.css"
 
@@ -9,6 +17,10 @@ interface UrlEntry {
   __v?: number;
 }
 
+/**
+ * PhishoffUrls component
+ * Manages the display and interaction with the URL database
+ */
 function PhishoffUrls() {
   const [urls, setUrls] = useState<UrlEntry[]>([]);
   const [filter, setFilter] = useState<"all" | "safe" | "malicious" | "unknown">("all");
