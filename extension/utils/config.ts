@@ -25,3 +25,17 @@ export function getApiUrl(): string {
 
     return apiUrl;
 }
+
+/**
+ * Gets the GOOGLE_SAFE_BROWSING_API_KEY from environment
+ * @returns API key string
+ */
+export function getSafeBrowingApiKey(): string {
+    const apiKey = process.env.GOOGLE_SAFE_BROWSING_API_KEY;
+
+    if (!apiKey) {
+        throw new Error("GOOGLE_SAFE_BROWSING_API_KEY not found in environment");
+    }
+
+    return apiKey;
+}
