@@ -16,29 +16,85 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Remove Existing Container
-        run: |
-          docker stop phishoff
-          docker rm phishoff
-
       - name: Build Docker Image
         run: |
           cd backend
-          docker build -t phishoff -f Dockerfile .
+          docker build -t phishoff:latest -f Dockerfile .
 
-      - name: Deploy New Docker Image
+      - name: Deploy to Staging Port
         run: |
+          docker stop phishoff-staging || true
+          docker rm phishoff-staging || true
+
           docker run -d \
-          -p 8000:8000 \
-          -v /deployments/models:/model \
-          -v /deployments/secrets/.env:/app/.env \
-          --env-file /deployments/secrets/.env \
-          --gpus all \
-          --name phishoff \
-          phishoff 
-          
+            -p 8001:8000 \
+            -v /deployments/models:/model \
+            -v /deployments/secrets/.env:/app/.env \
+            --env-file /deployments/secrets/.env \
+            --gpus all \
+            --name phishoff-staging \
+            phishoff:latest
 
-      - name: Verify deployment
+
+      - name: Verify Staging Deployment
         run: |
-          sleep 15
+          for i in {1..10}; do
+            if curl -s http://localhost:8001/docs | grep "FastAPI"; then
+              echo "Staging verification successful"
+              exit 0
+            fi
+            sleep 5
+          done
+          
+          # Health check with retries
+          echo "Testing /api/v1/health endpoint..."
+          for i in {1..5}; do
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8001/api/v1/health)
+            if [ "$HEALTH_STATUS" -eq 200 ]; then
+              echo "Health check passed"
+              break
+            fi
+            sleep 5
+          done
+          
+          if [ "$HEALTH_STATUS" -ne 200 ]; then
+            echo "Health check failed with status $HEALTH_STATUS"
+            exit 1
+          fi
+
+          # Authentication check
+          echo "Testing /api/v1/checkcontents endpoint..."
+          AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            http://localhost:8001/api/v1/checkcontents)
+          
+          if [ "$AUTH_STATUS" -ne 401 ]; then
+            echo "Auth check failed - expected 401 but got $AUTH_STATUS"
+            exit 1
+          fi
+          
+          echo "All endpoint checks passed"
+
+      - name: Promote to Production
+        if: success()
+        run: |
+          docker stop phishoff || true
+          docker rm phishoff || true
+
+          docker run -d \
+            -p 8000:8000 \
+            -v /deployments/models:/model \
+            -v /deployments/secrets/.env:/app/.env \
+            --env-file /deployments/secrets/.env \
+            --gpus all \
+            --name phishoff \
+            phishoff:latest
+
+          docker stop phishoff-staging || true
+          docker rm phishoff-staging || true
+
+      - name: Verify Production Deployment
+        if: success()
+        run: |
+          sleep 5
           curl -s http://localhost:8000/docs | grep "FastAPI" || exit 1
