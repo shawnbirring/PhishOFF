@@ -1,20 +1,34 @@
-This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with [`plasmo init`](https://www.npmjs.com/package/plasmo).
+# PhishOFF Plasmo Extension
 
-## Getting Started
+A plasmo extension with two main features: Ensuring the url you are visiting is safe and providing detection for Phishing in your emails.
 
-First, run the development server:
+## Running Locally
 
-```bash
-pnpm dev
-# or
-npm run dev
-```
+1. **Install Dependencies**:
 
-Open your browser and load the appropriate development build. For example, if you are developing for the chrome browser, using manifest v3, use: `build/chrome-mv3-dev`.
+   ```bash
+   bun install
+   ```
 
-You can start editing the popup by modifying `popup.tsx`. It should auto-update as you make changes. To add an options page, simply add a `options.tsx` file to the root of the project, with a react component default exported. Likewise to add a content page, add a `content.ts` file to the root of the project, importing some module and do some logic, then reload the extension on your browser.
+2. **Set Up Environment File**:
+   Create a `.env` file:
 
-For further guidance, [visit our Documentation](https://docs.plasmo.com/)
+   ```
+    PLASMO_PUBLIC_VIRUSTOTAL_API_KEY=
+    API_URL=
+   ```
+
+3. **Run the Extension**:
+
+   ```bash
+   bun run dev
+   ```
+
+4. **Open Browser and load appropriate development build**:
+   - For chrome browser, using manifest v3, use: `build/chrome-mv3-dev`.
+   - Open chrome://extensions/ and enable "Developer mode".
+   - Click on "Load unpacked" and select the `build/chrome-mv3-dev` inside this extension directory under /build.
+   - The extension should now be loaded and you can start testing it.
 
 ## Making production build
 
@@ -30,4 +44,4 @@ This should create a production bundle for your extension, ready to be zipped an
 
 ## Submit to the webstores
 
-The easiest way to deploy your Plasmo extension is to use the built-in [bpp](https://bpp.browser.market) GitHub action. Prior to using this action however, make sure to build your extension and upload the first version to the store to establish the basic credentials. Then, simply follow [this setup instruction](https://docs.plasmo.com/framework/workflows/submit) and you should be on your way for automated submission!
+The easiest way to deploy your Plasmo extension is to use the built-in [bpp](https://bpp.browser.market) GitHub action. Prior to using this action however, make sure to build your extension and upload the first version to the store to establish the basic credentials. Then, simply follow [this setup instruction](https://docs.plasmo.com/framework/workflows/submit) and you should be on your way for automated submission! -->
