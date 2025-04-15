@@ -45,8 +45,35 @@ jobs:
             fi
             sleep 5
           done
-          echo "Staging verification failed"
-          exit 1
+          
+          # Health check with retries
+          echo "Testing /api/v1/health endpoint..."
+          for i in {1..5}; do
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8001/api/v1/health)
+            if [ "$HEALTH_STATUS" -eq 200 ]; then
+              echo "Health check passed"
+              break
+            fi
+            sleep 5
+          done
+          
+          if [ "$HEALTH_STATUS" -ne 200 ]; then
+            echo "Health check failed with status $HEALTH_STATUS"
+            exit 1
+          fi
+
+          # Authentication check
+          echo "Testing /api/v1/checkcontents endpoint..."
+          AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            http://localhost:8001/api/v1/checkcontents)
+          
+          if [ "$AUTH_STATUS" -ne 401 ]; then
+            echo "Auth check failed - expected 401 but got $AUTH_STATUS"
+            exit 1
+          fi
+          
+          echo "All endpoint checks passed"
 
       - name: Promote to Production
         if: success()
