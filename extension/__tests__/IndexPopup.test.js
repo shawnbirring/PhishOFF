@@ -1,37 +1,87 @@
-const { render, screen } = require("@testing-library/react");
-const IndexPopup = require("../popup").default;
-const { checkForPhishingInEmail, isValidUrl } = require("../utils");
+import React from "react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import IndexPopup from "../popup"; // Adjust path as needed
+import "@testing-library/jest-dom";
 
-// Mock external functions used in popup.tsx
-jest.mock("../utils", () => ({
-  checkForPhishingInEmail: jest.fn().mockResolvedValue(false), // Mock as an async function
-  isValidUrl: jest.fn((url) => url.startsWith("https://")), // Simple validation logic
-}));
+// Mocking fetch API for testing
+global.fetch = jest.fn();
+
+// Mocking chrome API
+global.chrome = {
+    identity: {
+        getAuthToken: jest.fn((options, callback) => callback("mock-token")),
+    },
+    runtime: {
+        lastError: null,
+    },
+    tabs: {
+        query: jest.fn(),
+    },
+    storage: {
+        local: {
+            get: jest.fn(),
+            set: jest.fn(),
+        },
+    },
+};
 
 describe("IndexPopup Component", () => {
-  test("renders without crashing", () => {
-    render(<IndexPopup />);
-    expect(screen.getByText(/some text in your component/i)).toBeInTheDocument();
-  });
+    beforeEach(() => {
+        jest.clearAllMocks();
+        global.fetch.mockClear();
+    });
 
-  test("checks for phishing detection", async () => {
-    const fakeEmail = {
-      headers: [
-        { name: "Subject", value: "Test Email" },
-        { name: "From", value: "test@example.com" },
-        { name: "To", value: "user@example.com" },
-        { name: "Date", value: "Sun, 31 Mar 2024 12:00:00 GMT" },
-      ],
-      body: { data: "fakeBase64Data" },
-    };
+    it("checks if email content is extracted correctly", async () => {
+        // Mock API calls
+        global.fetch.mockResolvedValueOnce({
+            json: jest.fn().mockResolvedValueOnce({
+                messages: [{ id: "12345" }],
+            }),
+        });
 
-    const result = await checkForPhishingInEmail(fakeEmail);
-    expect(result).toBe(false); // Matches the mock return value
-  });
+        global.fetch.mockResolvedValueOnce({
+            json: jest.fn().mockResolvedValueOnce({
+                payload: {
+                    headers: [
+                        { name: "Subject", value: "Urgent: Reset Your Password" },
+                        { name: "From", value: "scammer@phishing.com" },
+                        { name: "To", value: "victim@example.com" },
+                        { name: "Date", value: "Wed, 03 Apr 2024 12:30:00 GMT" },
+                    ],
+                    body: { data: btoa("This is a sample email body with a phishing link: http://malicious.com") },
+                },
+            }),
+        });
 
-  test("validates URLs correctly", () => {
-    expect(isValidUrl("https://example.com")).toBe(true);
-    expect(isValidUrl("invalid-url")).toBe(false);
-  });
+        render(<IndexPopup />);
+
+        fireEvent.click(screen.getByText("Latest Email"));
+        fireEvent.click(screen.getByText("Show Content"));
+
+        await waitFor(() => {
+            expect(screen.getByText("This is a sample email body with a phishing link: http://malicious.com")).toBeInTheDocument();
+        });
+    });
+
+    it("renders the main popup content", async () => {
+        render(<IndexPopup />);
+
+        await waitFor(() => {
+            expect(screen.getByText("PhishingOff")).toBeInTheDocument();
+            expect(screen.getByText("Email Content:")).toBeInTheDocument();
+            expect(screen.getByText("Current Website:")).toBeInTheDocument();
+        });
+    });
+
+    it("handles phishing detection for valid URLs", async () => {
+        render(<IndexPopup />);
+
+        fireEvent.change(screen.getByPlaceholderText("Enter a URL"), { target: { value: "http://malicious.com" } });
+        fireEvent.click(screen.getByText("Check URL"));
+
+        await waitFor(() => {
+            expect(screen.getByText("Warning: This URL is potentially malicious!")).toBeInTheDocument();
+        });
+    });
 });
 
